@@ -3,7 +3,12 @@
 
 
 import abc
+import sys
 from src.Tools import OBSDataTool
+sys.path.append('..\\lib')
+from obs import ObsClient, Object, DeleteObjectsRequest
+from configparser import ConfigParser
+confPath = 'conf.ini'
 
 
 class OBSDataToolFactory:
@@ -12,15 +17,25 @@ class OBSDataToolFactory:
         pass
 
     def newObject(self, bucketName):
-        
-        print('[OBSDataToolFactory] newObject')
-        newObsDataTool = OBSDataTool()
+        conf = ConfigParser()
+        conf.read(confPath)
+        # Use configuration file
+        try:          
+            ak = conf.get('OBSconfig','ak')
+            sk = conf.get('OBSconfig','sk')
+            server = conf.get('OBSconfig','server')
+            obsClient = ObsClient(access_key_id=ak, secret_access_key=sk, server=server)
+            
+            newObsDataTool = OBSDataTool(obsClient)
+            newObsDataTool.setConfPath(confPath)
+            newObsDataTool.setBucketName(bucketName)
+            return newObsDataTool
 
-        newObsDataTool.setConfPath('conf.ini')
-        newObsDataTool.setBucketName(bucketName)
-
+        except Exception as ex:
+            print('New OBS object ' + str(ex))
+        pass
     
-        return newObsDataTool
+
     
     def getType(self):
         return 'ObsDataToolFactory'

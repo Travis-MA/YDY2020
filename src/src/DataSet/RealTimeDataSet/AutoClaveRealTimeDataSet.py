@@ -2,6 +2,7 @@ import abc
 from model.DataSet import RealTimeDataSet
 print('okok')
 
+dev_prefix = '5f2149f4f958e402cae59c57_00'
 
 class SingleAutoClaveDataSet(RealTimeDataSet):
 
@@ -12,6 +13,7 @@ class SingleAutoClaveDataSet(RealTimeDataSet):
     def __init__(self, ID, dev_ID):
         self.__claveID = ID
         self.__device_id = dev_ID
+        self.__recordList = []
         pass
 
     def getDevId(self):
@@ -34,7 +36,7 @@ class SingleAutoClaveDataSet(RealTimeDataSet):
 
     def getLastTime(self):
         if len(self.__recordList) > 0:
-            return self.__recordList[-1].getTimeStemp()
+            return self.__recordList[-1].getTime()
         else:
             return 0
 
@@ -47,7 +49,7 @@ class AutoClaveRealTimeDataSet(RealTimeDataSet):
 
     def __init__(self, claveNum):
         self.__AutoClaveNum = claveNum
-        dev_prefix = '5f2149f4f958e402cae59c57_00'
+        self.__AutoClaveDataSetList = []
         for claveId in range(1,self.__AutoClaveNum+1):
             self.__AutoClaveDataSetList.append(SingleAutoClaveDataSet(claveId, dev_prefix+str(claveId)))
 

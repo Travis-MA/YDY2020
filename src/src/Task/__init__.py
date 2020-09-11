@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 
-from src.Task.DIStoOBSscheduleTask import DIStoOBSscheduleTask
+from src.Task.ScheduleTask.DIStoOBSscheduleTask import DIStoOBSscheduleTask
 
 __all__ = [
     'DIStoOBSscheduleTask'

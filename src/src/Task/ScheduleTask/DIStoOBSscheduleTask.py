@@ -29,10 +29,9 @@ class DIStoOBSscheduleTask(ScheduleTask):
         disDataTool = DISDataToolFactory().newObject('shardId-0000000000', 0, 'dis-YDY1')
         dataSet = AutoClaveRealTimeDataSet(claveNum)
         dataSet = disDataTool.getData(dataSet)
-        print(dataSet.getSet(3)[4].getTime())
 
         obsDataTool = OBSDataToolFactory().newObject('obs-ydy1')
-        #obsDataTool.postData(dataSet)
+        obsDataTool.postData(dataSet)
 
 
     def setPeriod(self, period):

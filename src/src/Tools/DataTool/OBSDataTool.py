@@ -6,7 +6,7 @@ import os
 import sys
 from model.Tools import DataTool
 sys.path.append('..\\lib')
-from obs import ObsClient, Object, DeleteObjectsRequest
+from obs import ObsClient, Object, DeleteObjectsRequest, PutObjectHeader
 from configparser import ConfigParser
 
 #OBS数据人
@@ -15,7 +15,10 @@ class OBSDataTool(DataTool):
     __confPath = ''
     __bucketName = ''
 
-    def __init__(self):
+    def __init__(self, obsClient):
+        self.__obsClient = obsClient
+        self.__confPath = ''
+        self.__bucketName = ''
         pass
 
     def getType(self):
@@ -33,9 +36,11 @@ class OBSDataTool(DataTool):
                 for data in record.getSet():
                     recDict = {'time':data.getTime(), 'inTemp':data.getInTemp(), 'outTemp':data.getOutTemp(), 'inPress':data.getInPress(), 'state':data.getState()}
                     recordList.append(recDict)
-                obsRecDict = {'claveId':claveId, 'lastTime':record.getLastTime(), 'para':recordList}
-                obsRecPrefix = 'ZyRealTime/clave'+str(claveId)
-                self.__writeStr(obsRecPrefix, obsRecDict)
+                obsRecDict = {'claveId':claveId, 'lastTime':record.getLastTime(), 'records':recordList}
+                obsRecPrefix = 'Service/ZyRealTime/clave'+str(claveId)
+                print('OBS write len:'+str(len(recordList))+' devId:'+dataObj.getDevId(claveId))
+                self.__deleteObject(obsRecPrefix)
+                self.__writeContent(obsRecPrefix, json.dumps(obsRecDict))
 
 
     def setConfPath(self, val):
@@ -44,41 +49,29 @@ class OBSDataTool(DataTool):
     def setBucketName(self, val):
         self.__bucketName = val
 
-    def __writeStr(self, prefix, str):
-        conf = ConfigParser()
-        conf.read(self.__confPath)
-        # Use configuration file
-        try:          
-            ak = conf.get('OBSconfig','ak')
-            sk = conf.get('OBSconfig','sk')
-            server = conf.get('OBSconfig','server')
-        
-            obsClient = ObsClient(access_key_id=ak, secret_access_key=sk, server=server)
-            resp = obsClient.listObjects(self.__bucketName, folderPrefix)
-            for content in resp.body.contents:
-                print('\t' + content.key + ' etag[' + content.etag + ']')
+    def __deleteObject(self, prefix):
+        resp = self.__obsClient.deleteObject(self.__bucketName, prefix)
+        if resp.status < 300:
+            print('Delete object ' + prefix + ' successfully!\n')
+        else:
+            print('common msg:status:', resp.status, ',errorCode:', resp.errorCode, ',errorMessage:', resp.errorMessage)
+       
 
-        except Exception as ex:
-            print('OBSDataTool __listObjectInFolder: ' + str(ex))
-        pass
+    def __writeContent(self, prefix, metaData):
+
+        resp = self.__obsClient.putContent(self.__bucketName, prefix, str(metaData))
+        if resp.status < 300:
+            print('Create object ' + prefix + ' successfully!\n')
+        else:
+            print('common msg:status:', resp.status, ',errorCode:', resp.errorCode, ',errorMessage:', resp.errorMessage)
+
 
     def __listObjectsInFolder(self, folderPrefix):
-        conf = ConfigParser()
-        conf.read(self.__confPath)
-        # Use configuration file
-        try:          
-            ak = conf.get('OBSconfig','ak')
-            sk = conf.get('OBSconfig','sk')
-            server = conf.get('OBSconfig','server')
         
-            obsClient = ObsClient(access_key_id=ak, secret_access_key=sk, server=server)
-            resp = obsClient.listObjects(self.__bucketName, folderPrefix)
-            for content in resp.body.contents:
-                print('\t' + content.key + ' etag[' + content.etag + ']')
+        resp = self.__obsClient.listObjects(self.__bucketName, folderPrefix)
+        for content in resp.body.contents:
+            print('\t' + content.key + ' etag[' + content.etag + ']')
 
-        except Exception as ex:
-            print('OBSDataTool __listObjectInFolder: ' + str(ex))
-        pass
    
 
 
