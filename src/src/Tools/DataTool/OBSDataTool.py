@@ -9,6 +9,9 @@ sys.path.append('..\\lib')
 from obs import ObsClient, Object, DeleteObjectsRequest, PutObjectHeader
 from configparser import ConfigParser
 
+from src.Algorithm.AutoClaveAlgorithm.ACRealTimeOBS import ACRealTimeOBS
+from src.Algorithm.AutoClaveAlgorithm.ACRecordOBS import ACRecordOBS
+
 
 #OBS数据人
 class OBSDataTool(DataTool):
@@ -28,25 +31,14 @@ class OBSDataTool(DataTool):
 #传递一个data过去？？？？？
     def getData(self, dataObj):
         if dataObj.getType() == 'AutoClaveRecordDataSet':
-            nowTime = dataObj.getNowTime()
-            recordDate = 
-
+            ACRecordOBS(self, dataObj).run()
+  
         else:
             pass
     
     def postData(self, dataObj):
         if dataObj.getType() == 'AutoClaveRealTimeDataSet':
-            for claveId in range(1,dataObj.getClaveNum()+1):
-                record = dataObj.getSet(claveId)
-                recordList = []
-                for data in record.getSet():
-                    recDict = {'time':data.getTime(), 'inTemp':data.getInTemp(), 'outTemp':data.getOutTemp(), 'inPress':data.getInPress(), 'state':data.getState()}
-                    recordList.append(recDict)
-                obsRecDict = {'claveId':claveId, 'lastTime':record.getLastTime(), 'records':recordList}
-                obsRecPrefix = 'Service/ZyRealTime/clave'+str(claveId)
-                print('OBS write len:'+str(len(recordList))+' devId:'+dataObj.getDevId(claveId))
-                self.__deleteObject(obsRecPrefix)
-                self.__writeContent(obsRecPrefix, json.dumps(obsRecDict))
+            ACRealTimeOBS(self,dataObj).run()
 
 
     def setConfPath(self, val):
@@ -55,15 +47,39 @@ class OBSDataTool(DataTool):
     def setBucketName(self, val):
         self.__bucketName = val
 
-    def __deleteObject(self, prefix):
+    def deleteObject(self, prefix):
         resp = self.__obsClient.deleteObject(self.__bucketName, prefix)
         if resp.status < 300:
             print('Delete object ' + prefix + ' successfully!\n')
         else:
             print('common msg:status:', resp.status, ',errorCode:', resp.errorCode, ',errorMessage:', resp.errorMessage)
+
+    def listObject(self, prefix):
+        # 调用listObjects接口列举指定桶内的所有对象
+        resp = self.__obsClient.listObjects(self.__bucketName, prefix=prefix)
+        if resp.status < 300: 
+            # 输出请求Id   
+            print('requestId:', resp.requestId)
+            print(prefix)
+            index = 0
+            # 遍历输出所有对象信息
+            objList = []
+            for content in resp.body.contents:
+                objList.append(content)
+                # 输出该对象名content.key
+                # 输出该对象的最后修改时间content.lastModified
+                # 输出该对象大小content.size
+                index += 1
+            return objList
+        else:  
+            # 输出错误码  
+            print('errorCode:', resp.errorCode)
+            # 输出错误信息
+            print('errorMessage:', resp.errorMessage)
+
        
 
-    def __writeContent(self, prefix, metaData):
+    def writeContent(self, prefix, metaData):
 
         resp = self.__obsClient.putContent(self.__bucketName, prefix, str(metaData))
         if resp.status < 300:
@@ -72,7 +88,7 @@ class OBSDataTool(DataTool):
             print('common msg:status:', resp.status, ',errorCode:', resp.errorCode, ',errorMessage:', resp.errorMessage)
 
 
-    def __listObjectsInFolder(self, folderPrefix):
+    def listObjectsInFolder(self, folderPrefix):
         
         resp = self.__obsClient.listObjects(self.__bucketName, folderPrefix)
         for content in resp.body.contents:

@@ -1,8 +1,8 @@
 import abc
-from model.DataSet import RealTimeDataSet
+
 
 #锅炉实时数据
-class BoilerRealTimeDataSet(RealTimeDataSet):
+class BoilerRealTimeDataSet():
 
     def getData(self):
         print('BoilerRealTimeData getData')

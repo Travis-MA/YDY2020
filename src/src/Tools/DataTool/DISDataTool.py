@@ -11,6 +11,8 @@ from model.Tools import DataTool
 import src.Data.Data as Data
 from configparser import ConfigParser
 
+from src.Algorithm.AutoClaveAlgorithm.ACGetDataDIS import ACGetDataDIS
+
 #DIS数据工具
 class DISDataTool(DataTool):
     
@@ -31,15 +33,15 @@ class DISDataTool(DataTool):
         pass
 
     # enter getCursor endpoint information
-    def __getCursor_test(self):
+    def getCursor_test(self):
         try:
             r = self.cli.getCursor(streamName=self.__streamName,partitionId=self.__partitionId,cursorType='TRIM_HORIZON',startSeq=self.__startSeq)
             return r.cursor
         except Exception as ex:
             print('DISDataMan __getCursor_test '+str(ex))
     # Download data
-    def __getRecords_test(self):
-        cursor=self.__getCursor_test()
+    def getRecords_test(self):
+        cursor=self.getCursor_test()
         print('cursor '+cursor)
         records = []
         try:
@@ -67,42 +69,9 @@ class DISDataTool(DataTool):
         return 'DISDataTool'
 
     def getData(self, dataObj):
-        if dataObj.getType() == 'AutoClaveRealTimeDataSet':
-            sourceData = self.__getRecords_test()
-            conf = ConfigParser()
-            conf.read(self.__confPath)
-            #print(sourceData)
+        if dataObj.getType() == 'AutoClaveRealTimeDataSet':          
+            return ACGetDataDIS(self,dataObj).run()
 
-            for claveId in range(1, dataObj.getClaveNum()+1):
-                # Use configuration file
-                try:
-                    inTempChannel = conf.get('AutoClave'+str(claveId),'inTempChannel')
-                    outTempChannel = conf.get('AutoClave'+str(claveId),'outTempChannel')
-                    inPressChannel = conf.get('AutoClave'+str(claveId),'inPressChannel')
-                    stateChannel = conf.get('AutoClave'+str(claveId),'stateChannel')    
-                    
-                    for devRec in sourceData:
-                        data = json.loads(devRec['data'])
-                        dev_id = data['device_id']
-                        if dev_id == dataObj.getDevId(claveId): 
-                            services = data['services'][0]
-                            properties = services['properties']
-                        
-                            recData = Data.AutoClaveData(claveId)
-                            recData.setTime(services['event_time'])
-                            recData.setInTemp(float(properties[inTempChannel]))
-                            recData.setOutTemp(float(properties[outTempChannel]))
-                            recData.setInPress(float(properties[inPressChannel]))
-                            recData.setState(float(properties[stateChannel]))
-
-   
-                            dataObj.pushData(claveId, recData)
-                    print('recDataLen: '+str(len(dataObj.getSet(claveId).getSet()))+' devid:'+dataObj.getDevId(claveId))
-                        
-                except Exception as ex:
-                    print('[DISDataTool](getData)' + str(ex))
-                        
-            return dataObj
         else:
             pass
 
@@ -111,6 +80,9 @@ class DISDataTool(DataTool):
 
     def setConfPath(self, val):
         self.__confPath = val
+    
+    def getConfPath(self):
+        return self.__confPath
 
     def setStreamName(self, val):
         self.__streamName = val
