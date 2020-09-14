@@ -1,10 +1,10 @@
 import abc
-from model.DataSet import RealTimeDataSet
+from model.DataSet import DataSet
 print('okok')
 
 dev_prefix = '5f2149f4f958e402cae59c57_00'
 
-class SingleAutoClaveDataSet(RealTimeDataSet):
+class SingleAutoClaveRealtimeDataSet(DataSet):
 
     __recordList = []
     __claveID = 0
@@ -42,7 +42,7 @@ class SingleAutoClaveDataSet(RealTimeDataSet):
 
 
 #蒸压釜实时数据
-class AutoClaveRealTimeDataSet(RealTimeDataSet):
+class AutoClaveRealTimeDataSet(DataSet):
 
     __AutoClaveDataSetList = []
     __AutoClaveNum = 0
@@ -51,7 +51,7 @@ class AutoClaveRealTimeDataSet(RealTimeDataSet):
         self.__AutoClaveNum = claveNum
         self.__AutoClaveDataSetList = []
         for claveId in range(1,self.__AutoClaveNum+1):
-            self.__AutoClaveDataSetList.append(SingleAutoClaveDataSet(claveId, dev_prefix+str(claveId)))
+            self.__AutoClaveDataSetList.append(SingleAutoClaveRealtimeDataSet(claveId, dev_prefix+str(claveId)))
 
     def getType(self):
         return 'AutoClaveRealTimeDataSet'

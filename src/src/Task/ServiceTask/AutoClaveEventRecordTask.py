@@ -8,47 +8,33 @@ import time
 
 from src.Factory import DISDataToolFactory
 from src.Factory import OBSDataToolFactory
-from src.DataSet import AutoClaveRealTimeDataSet
+from src.DataSet import AutoClaveRecordDataSet
 from src.Data.Data import AutoClaveData
-from model.Task import ScheduleTask
+from model.Task import Task
 
 
 #任务抽象类
-class DIStoOBSscheduleTask(ScheduleTask):
-    __period = 0
+class AutoClaveEventRecordTask(Task):
 
-    def __init__(self, period):
-        self.__period = period
-
-
-    def __job(self):
-
-
-        #从DIS采集蒸压釜实时数据，并上传到OBS
-        claveNum = 7
-        disDataTool = DISDataToolFactory().newObject('shardId-0000000000', 0, 'dis-YDY1')
-        dataSet = AutoClaveRealTimeDataSet(claveNum)
-        dataSet = disDataTool.getData(dataSet)
-
-        obsDataTool = OBSDataToolFactory().newObject('obs-ydy1')
-        obsDataTool.postData(dataSet)
-
-
-    def setPeriod(self, period):
-        self.__period = period
-
+    def __init__(self, nowTime, dataSet, claveNum, obsDataTool):
+        self.nowTime = nowTime
+        self.dataSet = dataSet
+        self.claveNum = claveNum
+        self.obsDataTool = obsDataTool
 
   
     def getType(self):
-        return "DIStoOBSscheduleTask"
+        return "AutoClaveEventRecordTask"
+
+    
+    def __eventDetect(self, claveId, lastTime):
+        pass
 
    
-    def run(self,para):
-
-        if para == 1:
-            self.__job()
-        else:
-            schedule.every(self.__period).minutes.do(self.__job)
+    def run(self):
+        autoClaveRecord = AutoClaveRecordDataSet(self.claveNum, self.nowTime)
+        autoClaveRecord = self.obsDataTool.getData(autoClaveRecord)
         
+
         pass
 

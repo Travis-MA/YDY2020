@@ -9,6 +9,7 @@ sys.path.append('..\\lib')
 from obs import ObsClient, Object, DeleteObjectsRequest, PutObjectHeader
 from configparser import ConfigParser
 
+
 #OBS数据人
 class OBSDataTool(DataTool):
 
@@ -26,7 +27,12 @@ class OBSDataTool(DataTool):
 
 #传递一个data过去？？？？？
     def getData(self, dataObj):
-        pass
+        if dataObj.getType() == 'AutoClaveRecordDataSet':
+            nowTime = dataObj.getNowTime()
+            recordDate = 
+
+        else:
+            pass
     
     def postData(self, dataObj):
         if dataObj.getType() == 'AutoClaveRealTimeDataSet':

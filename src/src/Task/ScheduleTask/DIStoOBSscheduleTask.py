@@ -3,13 +3,16 @@ import json
 import os
 import sys
 import schedule
-import time
+from datetime import datetime
+from datetime import timezone
+from datetime import timedelta
 
 
 from src.Factory import DISDataToolFactory
 from src.Factory import OBSDataToolFactory
 from src.DataSet import AutoClaveRealTimeDataSet
 from src.Data.Data import AutoClaveData
+from src.Task import AutoClaveEventRecordTask
 from model.Task import ScheduleTask
 
 
@@ -33,6 +36,10 @@ class DIStoOBSscheduleTask(ScheduleTask):
         obsDataTool = OBSDataToolFactory().newObject('obs-ydy1')
         obsDataTool.postData(dataSet)
 
+        hourOffset = 7
+        nowTime = datetime(year=2020, month=9, day=13, hour=0, minute=0, second=0, microsecond=0, tzinfo=timezone(timedelta(hours=hourOffset)), fold=0)
+        autoClaveRecordTask = AutoClaveEventRecordTask(nowTime, dataSet, claveNum, obsDataTool)
+        autoClaveRecordTask.run()
 
     def setPeriod(self, period):
         self.__period = period

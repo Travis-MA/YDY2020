@@ -1,25 +1,51 @@
 import abc
-from model.DataSet import RecordDataSet
+from model.DataSet import DataSet
 
-#蒸压釜数据记录
-class AutoClaveRecordDataSet(RecordDataSet):
+class SingleAutoClaveRecordDataSet(DataSet):
+
+
+    def __init__(self, claveId):
+        self.eventList = []
+        self.claveId = claveId
+
 
     def getType(self):
-        return 'AutoClaveRecordData'
+        return "SingleAutoClaveRecordDataSet"
 
-    def setStartTime(self, startTime):
-        pass
-    
-    def addData(self, val):
-        pass
 
-    def setEndTime(self, startTime):
+    def pushData(self,data):
         pass
 
 
-    def getStartTime(self):
+    def getSet(self):
         pass
 
-    def getEndTime(self):
+
+#蒸压釜数据记录
+class AutoClaveRecordDataSet(DataSet):
+
+    def __init__(self, claveNum, nowTime):
+        self.subRecordSetList = []
+        self.nowTime = nowTime
+        self.claveNum = claveNum
+        for claveId in range (1 , self.claveNum+1):
+            subRecordSet = SingleAutoClaveRecordDataSet(claveId)
+            self.subRecordSetList.append(subRecordSet)
+
+    def getRecordDate(self):
+        return self.recordDate
+
+    def getType(self):
+        return "AutoClaveRecordDataSet"
+
+    def getNowTime(self):
+        return self.nowTime
+
+
+    def pushData(self,data):
+        pass
+
+
+    def getSet(self):
         pass
 
