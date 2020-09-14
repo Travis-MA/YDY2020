@@ -1,5 +1,6 @@
 # -*- coding:utf-8 -*-
 import json
+import src.Data.Data as Data
 from model.Algorithm import Algorithm
 from configparser import ConfigParser
 
@@ -36,7 +37,7 @@ class ACGetDataDIS(Algorithm):
                         services = data['services'][0]
                         properties = services['properties']
                     
-                        recData = self.Data.AutoClaveData(claveId)
+                        recData = Data.AutoClaveData(claveId)
                         recData.setTime(services['event_time'])
                         recData.setInTemp(float(properties[inTempChannel]))
                         recData.setOutTemp(float(properties[outTempChannel]))

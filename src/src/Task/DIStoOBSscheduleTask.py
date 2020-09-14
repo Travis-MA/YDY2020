@@ -39,7 +39,7 @@ class DIStoOBSscheduleTask(ScheduleTask):
         obsDataTool.postData(dataSet)
 
         hourOffset = 7
-        nowTime = datetime(year=2020, month=8, day=28, hour=5, minute=0, second=0, microsecond=0, tzinfo=timezone(timedelta(hours=hourOffset)), fold=0)
+        nowTime = datetime(year=2020, month=8, day=29, hour=8, minute=0, second=0, microsecond=0, tzinfo=timezone(timedelta(hours=hourOffset)), fold=0)
         autoClaveRecordTask = AutoClaveEventRecordTask(nowTime, dataSet, claveNum, obsDataTool)
         autoClaveRecordTask.run()
 

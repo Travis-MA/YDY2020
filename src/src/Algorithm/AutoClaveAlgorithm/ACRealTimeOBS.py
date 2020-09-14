@@ -25,4 +25,4 @@ class ACRealTimeOBS(Algorithm):
             obsRecPrefix = 'Service/ZyRealTime/clave'+str(claveId)
             print('OBS write len:'+str(len(recordList))+' devId:'+self.dataObj.getDevId(claveId))
             self.OBSTool.deleteObject(obsRecPrefix)
-            self.OBSTool.writeContent(obsRecPrefix, json.dumps(obsRecDict))
+            self.OBSTool.writeContent(obsRecPrefix, str(json.dumps(obsRecDict)))

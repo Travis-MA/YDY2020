@@ -10,7 +10,7 @@ from obs import ObsClient, Object, DeleteObjectsRequest, PutObjectHeader
 from configparser import ConfigParser
 
 from src.Algorithm.AutoClaveAlgorithm.ACRealTimeOBS import ACRealTimeOBS
-from src.Algorithm.AutoClaveAlgorithm.ACRecordOBS import ACRecordOBS
+from src.Algorithm.AutoClaveAlgorithm.ACRecordInitOBS import ACRecordInitOBS
 
 
 #OBS数据人
@@ -30,10 +30,16 @@ class OBSDataTool(DataTool):
 
 #传递一个data过去？？？？？
     def getData(self, dataObj):
+        #返回一个包含当日事件列表的对象，并包含数据指针，如果没有当日，会做当日初始化
         if dataObj.getType() == 'AutoClaveRecordDataSet':
-            ACRecordOBS(self, dataObj).run()
+            dataObj = ACRecordInitOBS(self, dataObj).run()
+            for claveId in range(1, 8):
+                lit = dataObj.getSet(claveId).getSet()
+                for cont in lit:
+                    print("clave:"+str(claveId)+"  "+str(cont))
   
         else:
+        
             pass
     
     def postData(self, dataObj):
@@ -53,6 +59,15 @@ class OBSDataTool(DataTool):
             print('Delete object ' + prefix + ' successfully!\n')
         else:
             print('common msg:status:', resp.status, ',errorCode:', resp.errorCode, ',errorMessage:', resp.errorMessage)
+
+    def copyObject(self, fromPrefix, toPrefix):
+        resp = self.__obsClient.copyObject(self.__bucketName, fromPrefix, self.__bucketName, toPrefix)
+
+        if resp.status < 300:
+            print('Copy Success!')
+        else:
+            print('errorCode:', resp.errorCode)
+            print('errorMessage:', resp.errorMessage)
 
     def listObject(self, prefix):
         # 调用listObjects接口列举指定桶内的所有对象
@@ -77,11 +92,10 @@ class OBSDataTool(DataTool):
             # 输出错误信息
             print('errorMessage:', resp.errorMessage)
 
-       
 
     def writeContent(self, prefix, metaData):
 
-        resp = self.__obsClient.putContent(self.__bucketName, prefix, str(metaData))
+        resp = self.__obsClient.putContent(self.__bucketName, prefix, metaData)
         if resp.status < 300:
             print('Create object ' + prefix + ' successfully!\n')
         else:

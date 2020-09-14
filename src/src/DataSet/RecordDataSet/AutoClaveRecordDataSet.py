@@ -14,11 +14,11 @@ class SingleAutoClaveRecordDataSet(DataSet):
 
 
     def pushData(self,data):
-        pass
+        self.eventList.append(data)
 
 
     def getSet(self):
-        pass
+        return self.eventList
 
 
 #蒸压釜数据记录
@@ -41,11 +41,14 @@ class AutoClaveRecordDataSet(DataSet):
     def getNowTime(self):
         return self.nowTime
 
+    def getClaveNum(self):
+        return self.claveNum
 
-    def pushData(self,data):
-        pass
+
+    def pushData(self,claveId, data):
+        self.subRecordSetList[claveId-1].pushData(data)
 
 
-    def getSet(self):
-        pass
+    def getSet(self,claveId):
+        return self.subRecordSetList[claveId-1]
 
