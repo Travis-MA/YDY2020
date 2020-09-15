@@ -1,4 +1,5 @@
 import abc
+import json
 from model.DataSet import DataSet
 print('okok')
 
@@ -31,8 +32,16 @@ class SingleAutoClaveRealtimeDataSet(DataSet):
         else:
             print('[AutoClaveRealTimeDataSet] Data Type Error')
 
-    def getSet(self):
-        return self.__recordList
+    def getSet(self, type):
+        if type == 'json':
+            recordListJson = []
+            for data in self.__recordList:
+                recDict = {'time':data.getTime(), 'inTemp':data.getInTemp(), 'outTemp':data.getOutTemp(), 'inPress':data.getInPress(), 'state':data.getState()}
+                recordListJson.append(recDict)
+            obsRecDict = {'claveId':self.getClaveID(), 'lastTime':self.getLastTime(), 'records':recordListJson}
+            return json.dumps(obsRecDict)
+        else:
+            return self.__recordList
 
     def getLastTime(self):
         if len(self.__recordList) > 0:
@@ -70,6 +79,7 @@ class AutoClaveRealTimeDataSet(DataSet):
 
     def getSet(self, ID):
         return self.__AutoClaveDataSetList[ID-1]
+
 
     def getLastTime(self, ID):
         if len(self.__AutoClaveDataSetList[ID-1].getSet()) > 0:

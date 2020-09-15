@@ -5,7 +5,7 @@ class SingleAutoClaveRecordDataSet(DataSet):
 
 
     def __init__(self, claveId):
-        self.eventList = []
+        self.eventList = [] #{eventPrefix, attribute}
         self.claveId = claveId
 
 

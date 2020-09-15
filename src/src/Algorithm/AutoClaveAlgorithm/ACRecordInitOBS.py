@@ -28,7 +28,8 @@ class ACRecordInitOBS:
                 for content in todayRecordList:
                     Xindex = content.key.find("X")
                     if(content.key[Xindex-1:Xindex]==str(claveId)):
-                        self.dataObj.pushData(claveId, content.key)
+                        eventDict = {'eventPrefix':content.key, 'attribute':'exist'}
+                        self.dataObj.pushData(claveId,eventDict)
 
             print('hasToday')
         else: #没有今天的
@@ -47,7 +48,8 @@ class ACRecordInitOBS:
                             if content.key[Xindex+1:Xindex+4] == 'ING':
                                 newTodayKey = todayFolderPath+content.key[Xindex-1:]
                                 self.OBSTool.copyObject(content.key, newTodayKey)
-                                self.dataObj.pushData(claveId, newTodayKey)
+                                eventDict = {'eventPrefix':newTodayKey, 'attribute':'exist'}
+                                self.dataObj.pushData(claveId,eventDict)
                                 flag = 1
                     if(flag == 0):
                         self.newRecord(claveId, todayInitial, offSetTime)
@@ -71,10 +73,12 @@ class ACRecordInitOBS:
             "FuId": claveId,
             "startTime":int(todayInitial.timestamp())*1000,
             "endTime":0,
+            "stateTime":[],
             "data":{"pressure": [], "tempIn": [], "tempOut": [], "state":[]}
         }
         todayFolderPath = folderPath+offSetTime.date().isoformat()+'/'
         eventPrefix = todayFolderPath+str(claveId)+'XING'+str(int(todayInitial.timestamp())*1000)+'Y'
-        self.dataObj.pushData(claveId,eventPrefix)
+        eventDict = {'eventPrefix':eventPrefix, 'attribute':'exist'}
+        self.dataObj.pushData(claveId,eventDict)
         recordJson = json.dumps(recordDict)
         self.OBSTool.writeContent(prefix = folderPath+offSetTime.date().isoformat()+'/'+eventPrefix, metaData = str(recordJson)) #新建今日文件夹

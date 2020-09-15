@@ -10,7 +10,7 @@ from obs import ObsClient, Object, DeleteObjectsRequest, PutObjectHeader
 from configparser import ConfigParser
 
 from src.Algorithm.AutoClaveAlgorithm.ACRealTimeOBS import ACRealTimeOBS
-
+from src.Algorithm.AutoClaveAlgorithm.ACTimeDomainAnalysisOBS import ACTimeDomainAnalysisOBS
 from src.Algorithm.AutoClaveAlgorithm.ACRecordInitOBS import ACRecordInitOBS
 
 
@@ -29,17 +29,21 @@ class OBSDataTool(DataTool):
     def getType(self):
         return "OBSDataTool"
 
-#传递一个data过去？？？？？
     def getData(self, dataObj):
         #返回一个包含当日事件列表的对象，并包含数据指针，如果没有当日，会做当日初始化
         if dataObj.getType() == 'AutoClaveRecordDataSet':
             dataObj = ACRecordInitOBS(self, dataObj).run()
+
             for claveId in range(1, 8):
                 lit = dataObj.getSet(claveId).getSet()
                 for cont in lit:
                     print("clave:"+str(claveId)+"  "+str(cont))
-  
-        else:
+
+            ACTimeDomainAnalysisOBS(self, dataObj).run()
+            
+        elif dataObj.getType() == 'AutoClaveRealTimeDataSet':
+
+
         
             pass
     
