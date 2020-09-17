@@ -24,6 +24,7 @@ class ACTimeDomainAnalysisOBS(Algorithm):
         for claveId in range(1,self.realTimeRecord.getClaveNum()+1):
             print('for clave:'+str(claveId))
             startTime = 0
+            oldState = ""
             #找到最新纪录时间
             for event in self.oldRecord.getSet(claveId).getSet():
                 prefix = event['eventPrefix']
@@ -32,10 +33,12 @@ class ACTimeDomainAnalysisOBS(Algorithm):
                 if(prefix[Xindex+1:Xindex+4] == "ING"):
                     time = int(prefix[Xindex+4:Yindex])
                     startTime = time
+                    oldState = "ING"
                 elif(prefix[Xindex+1:Xindex+4] == "FIN"): 
                     time = int(prefix[Yindex:])
                     if time>startTime:
                         startTime = time
+                        oldState = "FIN"
 
             startTime = int(startTime/1000)
             #得到实时数据
@@ -46,13 +49,12 @@ class ACTimeDomainAnalysisOBS(Algorithm):
             stateList = []
             recordList = self.realTimeRecord.getSet(claveId).getSet('list')
             for autoClaveData in recordList:
-                time = int(datetime.strptime(autoClaveData.getTime(),'%Y%m%dT%H%M%SZ').timestamp())
-                #print('time:'+str(time)+" stat:"+str(startTime))
+                time = int(autoClaveData.getTime())
                 if(time>startTime):
-                    inTemp = int(autoClaveData.getInTemp())
-                    outTemp = int(autoClaveData.getOutTemp())
-                    inPress = int(autoClaveData.getInPress())
-                    state = int(autoClaveData.getState())
+                    inTemp = autoClaveData.getInTemp()
+                    outTemp = autoClaveData.getOutTemp()
+                    inPress = autoClaveData.getInPress()
+                    state = autoClaveData.getState()
 
                     timeList.append(time)
                     inTempList.append(inTemp)

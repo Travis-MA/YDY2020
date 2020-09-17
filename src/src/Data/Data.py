@@ -7,8 +7,14 @@ class AutoClaveData(Data):
 
     __claveID = 0
     __inTemp = 0
+    __inTempDiff = 0
+
     __outTemp = 0
+    __outTempDiff = 0
+
     __inPress = 0
+    __inPressDiff = 0
+
     __time = ''
     __state = 0
     __stateName = ''
@@ -27,21 +33,33 @@ class AutoClaveData(Data):
 
     def getInTemp(self):
         return self.__inTemp
+    
+    def getInTempDiff(self):
+        return self.__inTempDiff
 
-    def setInTemp(self, inTemp):
+    def setInTemp(self, inTemp, inTempDiff):
         self.__inTemp = inTemp
+        self.__inTempDiff = inTempDiff
 
     def getOutTemp(self):
         return self.__outTemp
+
+    def getOutTempDiff(self):
+        return self.__outTempDiff
     
-    def setOutTemp(self, outTemp):
+    def setOutTemp(self, outTemp, outTempDiff):
         self.__outTemp = outTemp
+        self.__outTempDiff = outTempDiff
 
     def getInPress(self):
         return self.__inPress
 
-    def setInPress(self, inPress):
+    def getInPressDiff(self):
+        return self.__inPressDiff
+
+    def setInPress(self, inPress ,inPressDiff):
         self.__inPress = inPress
+        self.__inPressDiff = inPressDiff
 
     def getState(self):
         return self.__state

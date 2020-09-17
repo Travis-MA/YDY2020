@@ -36,7 +36,7 @@ class SingleAutoClaveRealtimeDataSet(DataSet):
         if type == 'json':
             recordListJson = []
             for data in self.__recordList:
-                recDict = {'time':data.getTime(), 'inTemp':data.getInTemp(), 'outTemp':data.getOutTemp(), 'inPress':data.getInPress(), 'state':data.getState()}
+                recDict = {'time':data.getTime(), 'inTemp':int(100*data.getInTemp()), 'outTemp':int(100*data.getOutTemp()), 'inPress':int(100*data.getInPress()), 'state':data.getState()}
                 recordListJson.append(recDict)
             obsRecDict = {'claveId':self.getClaveID(), 'lastTime':self.getLastTime(), 'records':recordListJson}
             return json.dumps(obsRecDict)
