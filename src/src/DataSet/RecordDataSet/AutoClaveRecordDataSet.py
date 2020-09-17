@@ -1,6 +1,16 @@
 import abc
 from model.DataSet import DataSet
 
+class SingleAutoClaveRecordEvent(DataSet):
+    def getType(self):
+        return "SingleAutoClaveRecordEvent"
+    
+    def pushData(self, data):
+        pass
+
+    def getSet(self):
+        pass
+
 class SingleAutoClaveRecordDataSet(DataSet):
 
 
