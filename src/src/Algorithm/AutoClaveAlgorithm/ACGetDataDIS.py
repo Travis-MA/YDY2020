@@ -46,8 +46,7 @@ class ACGetDataDIS(Algorithm):
 
 
                         self.dataObj.pushData(claveId, recData)
-                print('recDataLen: '+str(len(self.dataObj.getSet(claveId).getSet()))+' devid:'+self.dataObj.getDevId(claveId))
-                    
+      
             except Exception as ex:
                 print('[DISDataTool](getData)' + str(ex))
                     

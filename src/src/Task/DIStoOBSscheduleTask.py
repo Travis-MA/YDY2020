@@ -15,7 +15,7 @@ from src.DataSet import AutoClaveRecordDataSet
 from src.Data.Data import AutoClaveData
 from model.Task import ScheduleTask
 from model.Task import Task
-
+from src.Algorithm.AutoClaveAlgorithm.ACTimeDomainAnalysisOBS import ACTimeDomainAnalysisOBS
 
 #任务抽象类
 class DIStoOBSscheduleTask(ScheduleTask):
@@ -39,7 +39,7 @@ class DIStoOBSscheduleTask(ScheduleTask):
         obsDataTool.postData(dataSet)
 
         hourOffset = 7
-        nowTime = datetime(year=2020, month=8, day=29, hour=8, minute=0, second=0, microsecond=0, tzinfo=timezone(timedelta(hours=hourOffset)), fold=0)
+        nowTime = datetime(year=2020, month=9, day=4, hour=8, minute=0, second=0, microsecond=0, tzinfo=timezone(timedelta(hours=hourOffset)), fold=0)
         autoClaveRecordTask = AutoClaveEventRecordTask(nowTime, dataSet, claveNum, obsDataTool)
         autoClaveRecordTask.run()
 
@@ -81,8 +81,15 @@ class AutoClaveEventRecordTask(Task):
 
    
     def run(self):
-        autoClaveRecord = AutoClaveRecordDataSet(self.claveNum, self.nowTime)
-        autoClaveRecord = self.obsDataTool.getData(autoClaveRecord)
+        oldAutoClaveRecord = AutoClaveRecordDataSet(self.claveNum, self.nowTime)
+        oldAutoClaveRecord = self.obsDataTool.getData(oldAutoClaveRecord)
+
+        for claveId in range(1, 8):
+            lit = oldAutoClaveRecord.getSet(claveId).getSet()
+            for cont in lit:
+                print("clave:"+str(claveId)+"  "+str(cont))
+
+        newAutoClaveRecord = ACTimeDomainAnalysisOBS(self, oldAutoClaveRecord, self.dataSet).run()
         
 
         pass
