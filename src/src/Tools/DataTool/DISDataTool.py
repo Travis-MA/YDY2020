@@ -8,7 +8,6 @@ import os
 import sys
 
 from model.Tools import DataTool
-import src.Data.Data as Data
 from configparser import ConfigParser
 
 from src.Algorithm.AutoClaveAlgorithm.ACGetDataDIS import ACGetDataDIS

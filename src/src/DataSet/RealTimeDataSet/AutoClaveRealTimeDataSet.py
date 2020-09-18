@@ -3,7 +3,7 @@ import json
 from model.DataSet import DataSet
 print('okok')
 
-dev_prefix = '5f2149f4f958e402cae59c57_00'
+dev_prefix = '5f61ea5045765502bcee8ab6_0'
 
 class SingleAutoClaveRealtimeDataSet(DataSet):
 
@@ -27,7 +27,7 @@ class SingleAutoClaveRealtimeDataSet(DataSet):
         return 'AutoClaveRealTimeDataSet'
 
     def pushData(self, val):
-        if val.getType() == 'AutoClaveData':
+        if val.getType() == 'AutoClaveRealTimeData':
             self.__recordList.append(val)
         else:
             print('[AutoClaveRealTimeDataSet] Data Type Error')
@@ -66,7 +66,7 @@ class AutoClaveRealTimeDataSet(DataSet):
         return 'AutoClaveRealTimeDataSet'
 
     def pushData(self, ID, val):
-        if val.getType() == 'AutoClaveData':
+        if val.getType() == 'AutoClaveRealTimeData':
             self.__AutoClaveDataSetList[ID-1].pushData(val)
         else:
             print('[AutoClaveRealTimeDataSet] Data Type Error')

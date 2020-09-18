@@ -3,7 +3,7 @@ from model.Data import Data
 print('okok')
 
 #蒸压釜实时数据
-class AutoClaveData(Data):
+class AutoClaveRealTimeData(Data):
 
     __claveID = 0
     __inTemp = 0
@@ -23,7 +23,7 @@ class AutoClaveData(Data):
         self.__claveID = ID
    
     def getType(self):
-        return 'AutoClaveData'
+        return 'AutoClaveRealTimeData'
 
     def getTime(self):
         return self.__time

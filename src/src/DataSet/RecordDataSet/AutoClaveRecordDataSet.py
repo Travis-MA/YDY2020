@@ -2,20 +2,64 @@ import abc
 from model.DataSet import DataSet
 
 class SingleAutoClaveRecordEvent(DataSet):
+    __prefix = ''
+    __recordList = []
+    __stateTime = []
+    __startTime = 0
+    __endTime = 0
+
+    def __init__(self,prefix, claveId):
+        self.__prefix = prefix
+        self.__recordList = []
+        self.__stateTime = []
+        self.__claveId = claveId
+        self.__startTime = 0
+        self.__endTime = 0
+    
+    def getClaveId(self):
+        return self.__claveId
+
+    def getPrefix(self):
+        return self.__prefix
+
+    def setPrefix(self, prefix):
+        self.__prefix = prefix
+
     def getType(self):
         return "SingleAutoClaveRecordEvent"
     
     def pushData(self, data):
-        pass
+        self.__recordList.append(data)
 
-    def getSet(self):
-        pass
+    def setStartTime(self, startTime):
+        self.__startTime = startTime
+
+    def getStartTime(self):
+        return self.__startTime
+
+    def setEndTime(self, endTime):
+        self.__endTime = endTime
+
+    def getEndTime(self):
+        return self.__endTime
+
+    def pushStateTime(self, stateTime):
+        self.__stateTime.append(stateTime)
+
+    def getSet(self, para):
+        if para == 'json':
+            if(len(self.__recordList)<=1):
+                return 0
+            else:
+                pass
+        else:
+            return self.__recordList
 
 class SingleAutoClaveRecordDataSet(DataSet):
 
 
     def __init__(self, claveId):
-        self.eventList = [] #{eventPrefix, attribute}
+        self.eventList = []
         self.claveId = claveId
 
 
@@ -24,7 +68,8 @@ class SingleAutoClaveRecordDataSet(DataSet):
 
 
     def pushData(self,data):
-        self.eventList.append(data)
+        event = SingleAutoClaveRecordEvent(data, self.claveId)
+        self.eventList.append(event)
 
 
     def getSet(self):
@@ -54,10 +99,13 @@ class AutoClaveRecordDataSet(DataSet):
     def getClaveNum(self):
         return self.claveNum
 
+    def newEvent(self, prefix, claveId):
+        return SingleAutoClaveRecordEvent(prefix, claveId)
 
-    def pushData(self,claveId, data):
+
+    def pushData(self,claveId,data):
+
         self.subRecordSetList[claveId-1].pushData(data)
-
 
     def getSet(self,claveId):
         return self.subRecordSetList[claveId-1]

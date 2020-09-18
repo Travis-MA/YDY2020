@@ -12,7 +12,6 @@ from src.Factory import DISDataToolFactory
 from src.Factory import OBSDataToolFactory
 from src.DataSet import AutoClaveRealTimeDataSet
 from src.DataSet import AutoClaveRecordDataSet
-from src.Data.Data import AutoClaveData
 from model.Task import ScheduleTask
 from model.Task import Task
 from src.Algorithm.AutoClaveAlgorithm.ACTimeDomainAnalysisOBS import ACTimeDomainAnalysisOBS
@@ -39,7 +38,8 @@ class DIStoOBSscheduleTask(ScheduleTask):
         obsDataTool.postData(dataSet)
 
         hourOffset = 7
-        nowTime = datetime(year=2020, month=9, day=4, hour=8, minute=0, second=0, microsecond=0, tzinfo=timezone(timedelta(hours=hourOffset)), fold=0)
+        today = datetime.today()
+        nowTime = datetime(year=today.year, month=today.month, day=today.day, hour=8, minute=0, second=0, microsecond=0, tzinfo=timezone(timedelta(hours=hourOffset)), fold=0)
         autoClaveRecordTask = AutoClaveEventRecordTask(nowTime, dataSet, claveNum, obsDataTool)
         autoClaveRecordTask.run()
 
@@ -83,13 +83,19 @@ class AutoClaveEventRecordTask(Task):
     def run(self):
         oldAutoClaveRecord = AutoClaveRecordDataSet(self.claveNum, self.nowTime)
         oldAutoClaveRecord = self.obsDataTool.getData(oldAutoClaveRecord)
-
-        for claveId in range(1, 8):
-            lit = oldAutoClaveRecord.getSet(claveId).getSet()
-            for cont in lit:
-                print("clave:"+str(claveId)+"  "+str(cont))
-
         newAutoClaveRecord = ACTimeDomainAnalysisOBS(self, oldAutoClaveRecord, self.dataSet).run()
+
+        for claveId in range(1,8):
+            singleAutoClaveRecord = newAutoClaveRecord.getSet(claveId)
+            print('ClaveId '+str(claveId)+"     AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
+            for event in singleAutoClaveRecord.getSet():
+                print('Prefix '+event.getPrefix()+"        EEEEEEEEEEEEEEEEEE")
+                print('startTime  '+str(datetime.fromtimestamp(event.getStartTime())))
+                print('endTime    '+str(datetime.fromtimestamp(event.getEndTime())))
+                for i in range (0,len(event.getSet('list'))):
+                    record = event.getSet('list')[i]
+                    print("inPress "+str(record.getInPress())+" inTemp "+str(record.getInTemp()))
+        #self.obsDataTool.pushData(newAutoClaveRecord)
         
 
         pass

@@ -1,6 +1,6 @@
 # -*- coding:utf-8 -*-
 import json
-import src.Data.Data as Data
+from src.Data import AutoClaveRealTimeData
 from model.Algorithm import Algorithm
 from configparser import ConfigParser
 from datetime import datetime
@@ -52,32 +52,35 @@ class ACGetDataDIS(Algorithm):
                 if dev_id == self.dataObj.getDevId(claveId): 
                     services = data['services'][0]
                     properties = services['properties']
-                    time = datetime.strptime(services['event_time'],'%Y%m%dT%H%M%SZ').timestamp()
+                    try:
+                        time = datetime.strptime(services['event_time'],'%Y%m%dT%H%M%SZ').timestamp()
+                        time = time + 3600*8
                     
-                
-                    recData = Data.AutoClaveData(claveId)
-                    recData.setTime(time)
-                    inTemp = float(properties[inTempChannel]) * float(inTempSlope) + float(inTempShift)
-                    outTemp = float(properties[outTempChannel]) * float(outTempSlope) + float(outTempShift)
-                    inPress = float(properties[inPressChannel]) * float(inPressSlope) + float(inPressShift)
+                        recData = AutoClaveRealTimeData(claveId)
+                        recData.setTime(time)
+                        inTemp = float(properties[inTempChannel]) * float(inTempSlope) + float(inTempShift)
+                        outTemp = float(properties[outTempChannel]) * float(outTempSlope) + float(outTempShift)
+                        inPress = float(properties[inPressChannel]) * float(inPressSlope) + float(inPressShift)
 
-                    inTempDiff = inTemp-oldInTemp
-                    outTempDiff = outTemp-oldOutTemp
-                    inPressDiff = inPress-oldInPress
-                    timeDiff = (time-oldTime)/3600 #每小时
+                        inTempDiff = inTemp-oldInTemp
+                        outTempDiff = outTemp-oldOutTemp
+                        inPressDiff = inPress-oldInPress
+                        timeDiff = (time-oldTime)/3600 #每小时
 
-                    recData.setInTemp(inTemp, inTempDiff/timeDiff)
-                    recData.setOutTemp(outTemp, outTempDiff/timeDiff)
-                    recData.setInPress(inPress, inPressDiff/timeDiff)
+                        recData.setInTemp(inTemp, inTempDiff/timeDiff)
+                        recData.setOutTemp(outTemp, outTempDiff/timeDiff)
+                        recData.setInPress(inPress, inPressDiff/timeDiff)
 
-                    recData.setState(float(properties[stateChannel]))
+                        recData.setState(float(properties[stateChannel]))
 
-                    oldInTemp = inTemp
-                    oldOutTemp = outTemp
-                    oldInPress = inPress
-                    oldTime = time
+                        oldInTemp = inTemp
+                        oldOutTemp = outTemp
+                        oldInPress = inPress
+                        oldTime = time
 
-                    self.dataObj.pushData(claveId, recData)
+                        self.dataObj.pushData(claveId, recData)
+                    except:
+                        pass
     
 
         return self.dataObj
