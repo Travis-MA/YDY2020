@@ -15,12 +15,13 @@ class AutoClaveRecordData(Data):
     __inPress = 0
     __inPressDiff = 0
 
-    __time = ''
+    __time = 0
     __state = 0
     __stateName = ''
 
-    def __init__(self, ID):
+    def __init__(self, ID, time):
         self.__claveID = ID
+        self.__time = time
    
     def getType(self):
         return 'AutoClaveRecordData'
@@ -38,8 +39,8 @@ class AutoClaveRecordData(Data):
         return self.__inTempDiff
 
     def setInTemp(self, inTemp, inTempDiff):
-        self.__inTemp = inTemp
-        self.__inTempDiff = inTempDiff
+        self.__inTemp = round(inTemp,3)
+        self.__inTempDiff = round(inTempDiff,3)
 
     def getOutTemp(self):
         return self.__outTemp
@@ -48,8 +49,8 @@ class AutoClaveRecordData(Data):
         return self.__outTempDiff
     
     def setOutTemp(self, outTemp, outTempDiff):
-        self.__outTemp = outTemp
-        self.__outTempDiff = outTempDiff
+        self.__outTemp = round(outTemp,3)
+        self.__outTempDiff = round(outTempDiff,3)
 
     def getInPress(self):
         return self.__inPress
@@ -58,8 +59,8 @@ class AutoClaveRecordData(Data):
         return self.__inPressDiff
 
     def setInPress(self, inPress ,inPressDiff):
-        self.__inPress = inPress
-        self.__inPressDiff = inPressDiff
+        self.__inPress = round(inPress,3)
+        self.__inPressDiff = round(inPressDiff,3)
 
     def getState(self, para):
         if para == 'name':

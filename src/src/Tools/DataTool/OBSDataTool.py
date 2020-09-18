@@ -10,6 +10,7 @@ from obs import ObsClient, Object, DeleteObjectsRequest, PutObjectHeader
 from configparser import ConfigParser
 
 from src.Algorithm.AutoClaveAlgorithm.ACRealTimeOBS import ACRealTimeOBS
+from src.Algorithm.AutoClaveAlgorithm.ACRecordOBS import ACRecordOBS
 from src.Algorithm.AutoClaveAlgorithm.ACRecordInitOBS import ACRecordInitOBS
 
 
@@ -44,7 +45,8 @@ class OBSDataTool(DataTool):
         if dataObj.getType() == 'AutoClaveRealTimeDataSet':
             ACRealTimeOBS(self,dataObj).run()
         elif dataObj.getType() == 'AutoClaveRecordDataSet':
-            pass
+            ACRecordOBS(self,dataObj).run()
+
 
 
     def setConfPath(self, val):
@@ -58,7 +60,7 @@ class OBSDataTool(DataTool):
         if resp.status < 300:
             print('Delete object ' + prefix + ' successfully!\n')
         else:
-            print('common msg:status:', resp.status, ',errorCode:', resp.errorCode, ',errorMessage:', resp.errorMessage)
+            print('common msg:status:', resp.status, 'prefix ', prefix, ',errorCode:', resp.errorCode, ',errorMessage:', resp.errorMessage)
 
     def copyObject(self, fromPrefix, toPrefix):
         resp = self.__obsClient.copyObject(self.__bucketName, fromPrefix, self.__bucketName, toPrefix)

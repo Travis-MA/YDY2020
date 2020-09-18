@@ -1,4 +1,5 @@
 import abc
+import json
 from model.DataSet import DataSet
 
 class SingleAutoClaveRecordEvent(DataSet):
@@ -51,7 +52,21 @@ class SingleAutoClaveRecordEvent(DataSet):
             if(len(self.__recordList)<=1):
                 return 0
             else:
-                pass
+                pressure = []
+                tempIn = []
+                tempOut = []
+                state = []
+                for data in self.__recordList:
+                    time = data.getTime()
+  
+                    tempIn.append({'t':time,'v':data.getInTemp()})
+                    tempOut.append({'t':time,'v':data.getOutTemp()})
+                    pressure.append({'t':time,'v':data.getInPress()})
+                    state.append({'t':time,'v':data.getState('name')})
+
+                recordDict = {'FuId':self.__claveId, 'startTime':self.getStartTime(), 'endTime':self.getEndTime(),'data':{'pressure':pressure, 'tempIn':tempIn, 'tempOut':tempOut, 'state':state}} 
+                recordJson = json.dumps(recordDict)
+                return recordJson
         else:
             return self.__recordList
 

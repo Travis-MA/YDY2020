@@ -70,15 +70,17 @@ class ACRecordInitOBS:
         return timeStemp
 
     def newRecord(self, claveId, todayInitial, offSetTime):
+        print('origin '+str(todayInitial.timestamp())+"  int "+str(int(todayInitial.timestamp())))
         recordDict = {
             "FuId": claveId,
-            "startTime":int(todayInitial.timestamp())*1000,
+            "startTime":int(todayInitial.timestamp()),
             "endTime":0,
             "stateTime":[],
             "data":{"pressure": [], "tempIn": [], "tempOut": [], "state":[]}
         }
         todayFolderPath = folderPath+offSetTime.date().isoformat()+'/'
-        eventPrefix = todayFolderPath+str(claveId)+'XING'+str(int(todayInitial.timestamp())*1000)+'Y'
+        eventPrefix = todayFolderPath+str(claveId)+'XING'+str(int(todayInitial.timestamp())+claveId)+'Y'
         self.dataObj.getSet(claveId).pushData(eventPrefix)
-        recordJson = json.dumps(recordDict)
-        self.OBSTool.writeContent(prefix = folderPath+offSetTime.date().isoformat()+'/'+eventPrefix, metaData = str(recordJson)) #新建今日文件夹
+        
+        #recordJson = json.dumps(recordDict)
+        #self.OBSTool.writeContent(prefix = eventPrefix, metaData = str(recordJson)) #新建今日文件夹

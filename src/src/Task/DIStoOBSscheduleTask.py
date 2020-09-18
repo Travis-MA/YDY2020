@@ -84,7 +84,7 @@ class AutoClaveEventRecordTask(Task):
         oldAutoClaveRecord = AutoClaveRecordDataSet(self.claveNum, self.nowTime)
         oldAutoClaveRecord = self.obsDataTool.getData(oldAutoClaveRecord)
         newAutoClaveRecord = ACTimeDomainAnalysisOBS(self, oldAutoClaveRecord, self.dataSet).run()
-
+        """
         for claveId in range(1,8):
             singleAutoClaveRecord = newAutoClaveRecord.getSet(claveId)
             print('ClaveId '+str(claveId)+"     AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
@@ -95,7 +95,8 @@ class AutoClaveEventRecordTask(Task):
                 for i in range (0,len(event.getSet('list'))):
                     record = event.getSet('list')[i]
                     print("inPress "+str(record.getInPress())+" inTemp "+str(record.getInTemp()))
-        #self.obsDataTool.pushData(newAutoClaveRecord)
+        """
+        self.obsDataTool.postData(newAutoClaveRecord)
         
 
         pass

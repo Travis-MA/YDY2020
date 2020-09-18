@@ -37,25 +37,24 @@ class ACTimeDomainAnalysisOBS(Algorithm):
                     oldState = "ING"
                     break
                 elif(prefix[Xindex+1:Xindex+4] == "FIN"): 
-                    time = int(prefix[Yindex:])
+                    time = int(prefix[Yindex+1:])
                     if time>startTime:
                         startTime = time
                         oldState = "FIN"
 
-            startTime = int(startTime/1000)
             recordList = self.realTimeRecord.getSet(claveId).getSet('list')
             
             if oldState == 'FIN':
                 time = self.__startEventDetect(recordList, startTime, 0.05)
                 if(time > 0):
                     ev = self.dataObj.newEvent('XING',claveId)
-                    ev = self.__writeContent(recordList,ev,time,0)
+                    ev = self.__writeContent(claveId, recordList,ev,time,0)
                     ev = self.__stateDetect(recordList,ev)
                     self.dataObj.getSet(claveId).pushData(ev)
             
             elif oldState == 'ING':
                 time = self.__endEventDetect(recordList, startTime, 0.05)
-                event = self.__writeContent(recordList,event,startTime,time)
+                event = self.__writeContent(claveId, recordList,event,startTime,time)
                 event = self.__stateDetect(recordList, event)
 
             #self.__toNumPy(recordList)
@@ -92,7 +91,7 @@ class ACTimeDomainAnalysisOBS(Algorithm):
         dataSet = np.array([timeList, inTempList, outTempList, inPressList, stateList])
         print(dataSet)
 
-    def __writeContent(self, recordList, event, startTime, endTime):
+    def __writeContent(self, claveId, recordList, event, startTime, endTime):
 
         if event.getType()=='SingleAutoClaveRecordEvent':
             event.setStartTime(startTime)
@@ -100,14 +99,14 @@ class ACTimeDomainAnalysisOBS(Algorithm):
 
             if(endTime == 0):
                 endTime = 1000000000000000
-                event.setPrefix("XING"+str(startTime)+"Y")
+                event.setPrefix(str(claveId)+"XING"+str(startTime)+"Y")
             else:
-                event.setPrefix("XFIN"+str(startTime)+"Y"+str(endTime))
+                event.setPrefix(str(claveId)+"XFIN"+str(startTime)+"Y"+str(endTime))
 
             for autoClaveData in recordList:
                 time = int(autoClaveData.getTime())
                 if time >= startTime and time <= endTime:
-                    dataObj = AutoClaveRecordData(event.getClaveId())
+                    dataObj = AutoClaveRecordData(event.getClaveId(), time)
 
                     dataObj.setInTemp(autoClaveData.getInTemp(), autoClaveData.getInTempDiff())
 
@@ -150,7 +149,7 @@ class ACTimeDomainAnalysisOBS(Algorithm):
 
             else:
                 pass
-        return time
+        return int(time)
         
 
     def __endEventDetect(self, recordList, startTime, tresh):
@@ -179,7 +178,7 @@ class ACTimeDomainAnalysisOBS(Algorithm):
 
             else:
                 pass
-        return time
+        return int(time)
 
     def __stateDetect(self, recordList, event):
         stateNameList = ['釜门开','釜门关','开始预养','从邻釜导气','从隔釜导气','升压','恒压','给邻釜预养','导气到邻釜','导气到隔釜','降压','排空']
