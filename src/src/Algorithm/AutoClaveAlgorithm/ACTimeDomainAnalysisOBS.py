@@ -52,12 +52,13 @@ class ACTimeDomainAnalysisOBS(Algorithm):
                     ev = self.dataObj.newEvent('XING',claveId)
                     ev = self.__writeContent(claveId, recordList,ev,time,0)
                     ev = self.__stateDetect(recordList,ev)
+                    print('evPrefix newIng: '+ev.getPrefix()+' length: '+str(len(ev.getSet('list'))))
                     self.dataObj.getSet(claveId).pushData(ev)
             
             elif oldState == 'ING':
                 time = self.__endEventDetect(recordList, startTime, 0.05)
                 event = self.__writeContent(claveId, recordList,event,startTime,time)
-                print('evPrefix: '+event.getPrefix())
+                print('evPrefix: '+event.getPrefix()+' length: '+str(len(event.getSet('list'))))
                 event = self.__stateDetect(recordList, event)
 
             #self.__toNumPy(recordList)

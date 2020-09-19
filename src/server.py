@@ -8,6 +8,6 @@ from src.Task import DIStoOBSscheduleTask
 
 #5分钟一次
 disToObsSchedule = DIStoOBSscheduleTask(5)
-disToObsSchedule.run(0)
+disToObsSchedule.run(1)
 
 

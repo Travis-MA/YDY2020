@@ -83,8 +83,12 @@ class SingleAutoClaveRecordDataSet(DataSet):
 
 
     def pushData(self,data):
-        event = SingleAutoClaveRecordEvent(data, self.claveId)
-        self.eventList.append(event)
+        if(isinstance(data,str)):
+            event = SingleAutoClaveRecordEvent(data, self.claveId)
+            self.eventList.append(event)
+            
+        else:
+            self.eventList.append(data)
 
 
     def getSet(self):
