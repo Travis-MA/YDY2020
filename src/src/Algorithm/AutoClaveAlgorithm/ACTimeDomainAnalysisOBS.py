@@ -43,6 +43,8 @@ class ACTimeDomainAnalysisOBS(Algorithm):
                         oldState = "FIN"
 
             recordList = self.realTimeRecord.getSet(claveId).getSet('list')
+
+            print('ClaveId '+str(claveId)+' sttime: '+str(startTime)+'  oldState: '+oldState)
             
             if oldState == 'FIN':
                 time = self.__startEventDetect(recordList, startTime, 0.05)
@@ -55,6 +57,7 @@ class ACTimeDomainAnalysisOBS(Algorithm):
             elif oldState == 'ING':
                 time = self.__endEventDetect(recordList, startTime, 0.05)
                 event = self.__writeContent(claveId, recordList,event,startTime,time)
+                print('evPrefix: '+event.getPrefix())
                 event = self.__stateDetect(recordList, event)
 
             #self.__toNumPy(recordList)

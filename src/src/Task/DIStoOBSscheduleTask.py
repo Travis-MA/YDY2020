@@ -1,4 +1,5 @@
 import abc
+import time
 import json
 import os
 import sys
@@ -58,8 +59,11 @@ class DIStoOBSscheduleTask(ScheduleTask):
             self.__job()
         else:
             schedule.every(self.__period).minutes.do(self.__job)
+            while True:
+                schedule.run_pending()
+                time.sleep(1)
         
-        pass
+        
 
 
 #任务抽象类

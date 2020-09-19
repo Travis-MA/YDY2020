@@ -64,7 +64,7 @@ class SingleAutoClaveRecordEvent(DataSet):
                     pressure.append({'t':time,'v':data.getInPress()})
                     state.append({'t':time,'v':data.getState('name')})
 
-                recordDict = {'FuId':self.__claveId, 'startTime':self.getStartTime(), 'endTime':self.getEndTime(),'data':{'pressure':pressure, 'tempIn':tempIn, 'tempOut':tempOut, 'state':state}} 
+                recordDict = {'FuId':self.__claveId, 'startTime':self.__startTime, 'endTime':self.__endTime, 'stateTime':self.__stateTime, 'data':{'pressure':pressure, 'tempIn':tempIn, 'tempOut':tempOut, 'state':state}} 
                 recordJson = json.dumps(recordDict)
                 return recordJson
         else:

@@ -70,16 +70,10 @@ class ACRecordInitOBS:
         return timeStemp
 
     def newRecord(self, claveId, todayInitial, offSetTime):
-        print('origin '+str(todayInitial.timestamp())+"  int "+str(int(todayInitial.timestamp())))
-        recordDict = {
-            "FuId": claveId,
-            "startTime":int(todayInitial.timestamp()),
-            "endTime":0,
-            "stateTime":[],
-            "data":{"pressure": [], "tempIn": [], "tempOut": [], "state":[]}
-        }
+
         todayFolderPath = folderPath+offSetTime.date().isoformat()+'/'
         eventPrefix = todayFolderPath+str(claveId)+'XING'+str(int(todayInitial.timestamp())+claveId)+'Y'
+        print('newRecord: '+eventPrefix)
         self.dataObj.getSet(claveId).pushData(eventPrefix)
         
         #recordJson = json.dumps(recordDict)
