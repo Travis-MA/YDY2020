@@ -25,8 +25,11 @@ class ACTimeDomainAnalysisOBS(Algorithm):
         for claveId in range(1,self.realTimeRecord.getClaveNum()+1):
             print('for clave:'+str(claveId))
             startTime = 0
+            ifEnd = 0
             oldState = ""
-            #找到最新纪录时间
+
+            #找到最新纪录时间，分两种情况，1是全部是FIN，所以开始时间算作最后一个FIN的结束时间
+            #2是有ING，有且仅有一个ING，开始时间算作ING的开始时间
             for event in self.dataObj.getSet(claveId).getSet():
                 prefix = event.getPrefix()
                 Xindex = prefix.find("X")
@@ -42,10 +45,12 @@ class ACTimeDomainAnalysisOBS(Algorithm):
                         startTime = time
                         oldState = "FIN"
 
+            #实时record list
             recordList = self.realTimeRecord.getSet(claveId).getSet('list')
 
             print('ClaveId '+str(claveId)+' sttime: '+str(startTime)+'  oldState: '+oldState)
             
+            #如果上一次记录的state是FIN， 要找新的事件
             if oldState == 'FIN':
                 time = self.__startEventDetect(recordList, startTime, 0.05)
                 if(time > 0):
@@ -55,6 +60,7 @@ class ACTimeDomainAnalysisOBS(Algorithm):
                     print('evPrefix newIng: '+ev.getPrefix()+' length: '+str(len(ev.getSet('list'))))
                     self.dataObj.getSet(claveId).pushData(ev)
             
+            #如果上一次记录的state是ING，则判断是否结束
             elif oldState == 'ING':
                 time = self.__endEventDetect(recordList, startTime, 0.05)
                 event = self.__writeContent(claveId, recordList,event,startTime,time)
@@ -63,7 +69,7 @@ class ACTimeDomainAnalysisOBS(Algorithm):
 
             #self.__toNumPy(recordList)
 
-        return self.dataObj
+        return {self.dataObj, ifEnd}
 
 
 
@@ -150,7 +156,8 @@ class ACTimeDomainAnalysisOBS(Algorithm):
                                 break
                     else:
                         time = startTime        
-
+                else:
+                    pass
             else:
                 pass
         return int(time)
