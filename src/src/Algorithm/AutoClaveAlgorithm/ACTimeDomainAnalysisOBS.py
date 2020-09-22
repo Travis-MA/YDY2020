@@ -47,12 +47,13 @@ class ACTimeDomainAnalysisOBS(Algorithm):
 
             #实时record list
             recordList = self.realTimeRecord.getSet(claveId).getSet('list')
+            dataSet = self.__toNumPy(recordList,[1/6,1/6,1/6,1/6,1/6,1/6])
 
             print('ClaveId '+str(claveId)+' sttime: '+str(startTime)+'  oldState: '+oldState)
             
             #如果上一次记录的state是FIN， 要找新的事件
             if oldState == 'FIN':
-                time = self.__startEventDetect(recordList, startTime, 0.05)
+                time = self.__startEventDetect(dataSet, startTime, 0.05)
                 if(time > 0):
                     ev = self.dataObj.newEvent('XING',claveId)
                     ev = self.__writeContent(claveId, recordList,ev,time,0)
@@ -73,7 +74,7 @@ class ACTimeDomainAnalysisOBS(Algorithm):
 
 
 
-    def __toNumPy(self, recordList):
+    def __toNumPy(self, recordList, window):
         #得到实时数据
         timeList = []
         inTempList =  []
@@ -90,16 +91,23 @@ class ACTimeDomainAnalysisOBS(Algorithm):
             state = autoClaveData.getState()
 
             timeList.append(time)
-            inTempList.append(inTemp)
-            outTempList.append(outTemp)
-            inPressList.append(inPress)
+            inTempList.append(inTemp/100)
+            outTempList.append(outTemp/100)
+            inPressList.append(inPress/100)
             stateList.append(state)
 
 
                 #print("Id:"+str(claveId)+" T:"+str(time)+" iT:"+str(inTemp)+" oT:"+str(outTemp)+" iP:"+str(inPress)+" S:"+str(state))
 
         dataSet = np.array([timeList, inTempList, outTempList, inPressList, stateList])
-        print(dataSet)
+        start = int(len(window)/2)
+        conv1 = np.convolve(dataSet[1,:], window)
+        conv2 = np.convolve(dataSet[2,:], window)
+        conv3 = np.convolve(dataSet[3,:], window)
+        dataSet[1,:] = conv1[start:start+dataSet.shape[1]]
+        dataSet[2,:] = conv2[start:start+dataSet.shape[1]]
+        dataSet[3,:] = conv3[start:start+dataSet.shape[1]]
+        return dataSet
 
     def __writeContent(self, claveId, recordList, event, startTime, endTime):
 
@@ -133,34 +141,30 @@ class ACTimeDomainAnalysisOBS(Algorithm):
             print('DataType Error')
 
 
-    def __startEventDetect(self, recordList, startTime, tresh):
+    def __startEventDetect(self, dataSet, startTime, tresh):
 
-        time = 0
-        for i in range(1,len(recordList)):
-            if time == 0:
-                autoClaveData = recordList[i]
-                rectime = int(autoClaveData.getTime())
-                if(rectime > startTime):
-                    if autoClaveData.getInPress() >= tresh:
-                        for j in range(2,i-2):
-                            k = i-j
 
-                            rec = [recordList[k-2].getInPress(), recordList[k-1].getInPress(), recordList[k].getInPress(), recordList[k+1].getInPress(), recordList[k+2].getInPress()]
+        print(dataSet.shape[1])
+        time_a = 0
+        ts = 5
+        j = ts
+        
+        while dataSet[:,j][0] <= startTime and j<dataSet.shape[1]-1:
+            j = j + 1
+            
 
-                            if rec[2] < tresh and self.__getState(recordList[k].getState())=='S1' and self.__getState(recordList[k-1].getState())=='S12':
-                                time = recordList[k-1].getTime()
-                                break
-
-                            if rec[0] > tresh and rec[1] > tresh and rec[2] > tresh and rec[3] <= tresh and rec[4] <= tresh:
-                                time = recordList[k].getTime()
-                                break
-                    else:
-                        time = startTime        
-                else:
-                    pass
-            else:
-                pass
-        return int(time)
+        if dataSet[:,j][3] >= tresh:
+            while dataSet[:,j][3] >= tresh and j > ts:
+                j = j - 1
+                print(dataSet[:,j])
+        else:
+            pass
+        while not (dataSet[:,j][3] > tresh or self.__getState(dataSet[:,j+1][4]) != self.__getState(dataSet[:,j][4])) and j > ts:
+            j = j - 1
+        time_a = dataSet[:,j-ts][0]
+        
+        
+        return int(time_a)
         
 
     def __endEventDetect(self, recordList, startTime, tresh):
