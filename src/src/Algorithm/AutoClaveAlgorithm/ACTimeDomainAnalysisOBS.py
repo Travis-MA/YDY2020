@@ -162,7 +162,7 @@ class ACTimeDomainAnalysisOBS(Algorithm):
         return int(time_a)  
 
     def __getState(self, val):
-        itv = 340
+        itv = 372
         if val > 0*itv and val <= 1*itv:
             return 1
         elif val > 1*itv and val <= 2*itv:

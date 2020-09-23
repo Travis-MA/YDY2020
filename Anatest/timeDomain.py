@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 
 
 def getState(val):
-    itv = 340
+    itv = 372
     if val > 0*itv and val <= 1*itv:
         return 1
     elif val > 1*itv and val <= 2*itv:
