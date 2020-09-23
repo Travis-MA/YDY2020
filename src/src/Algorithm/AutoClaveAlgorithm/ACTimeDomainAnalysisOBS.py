@@ -77,11 +77,10 @@ class ACTimeDomainAnalysisOBS(Algorithm):
         if total == self.realTimeRecord.getClaveNum():
             ifAllEnd = 1
 
-        return {self.dataObj, ifAllEnd}
+        return self.dataObj, ifAllEnd
 
 
     def __writeContent(self, claveId, dataSet, event, startTime, endTime):
-
         if event.getType()=='SingleAutoClaveRecordEvent':
             event.setStartTime(startTime)
             event.setEndTime(endTime)
@@ -112,15 +111,12 @@ class ACTimeDomainAnalysisOBS(Algorithm):
 #      2，如果state没有记录， startTime选在之前蒸养结束后5分钟
     def __startEventDetect(self, dataSet, startTime, tresh):
 
-
-        print(dataSet.shape[1])
         time_a = 0
         ts = 5
         j = ts
         
         while dataSet[:,j][0] <= startTime and j<dataSet.shape[1]-1:
             j = j + 1
-            
 
         if dataSet[:,j][3] >= tresh:
             while dataSet[:,j][3] >= tresh and j > ts:
@@ -130,8 +126,7 @@ class ACTimeDomainAnalysisOBS(Algorithm):
         while not (dataSet[:,j][3] > tresh or self.__getState(dataSet[:,j+1][4]) != self.__getState(dataSet[:,j][4])) and j > ts:
             j = j - 1
         time_a = dataSet[:,j-ts][0]
-        
-        
+              
         return int(time_a)
     
 
@@ -146,7 +141,6 @@ class ACTimeDomainAnalysisOBS(Algorithm):
         while dataSet[:,j][0] <= startTime and j<dataSet.shape[1]-1:
             j = j + 1
             
-
         while j<dataSet.shape[1]-1 and (dataSet[:,j][3]-dataSet[:,j-1][3] < 0 or dataSet[:,j][3]<= tresh):
             j = j + 1
 
@@ -164,8 +158,7 @@ class ACTimeDomainAnalysisOBS(Algorithm):
             
             if (self.__getState(dataSet[:,j+1][4])*self.__getState(dataSet[:,j][4])==12):
                 time_a = dataSet[:,j+ts][0]
-        
-        
+              
         return int(time_a)  
 
     def __getState(self, val):

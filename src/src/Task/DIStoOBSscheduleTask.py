@@ -79,29 +79,17 @@ class AutoClaveEventRecordTask(Task):
     def getType(self):
         return "AutoClaveEventRecordTask"
 
-    
-    def __eventDetect(self, claveId, lastTime):
-        pass
-
    
     def run(self):
-        oldAutoClaveRecord = AutoClaveRecordDataSet(self.claveNum, self.nowTime)
-        oldAutoClaveRecord = self.obsDataTool.getData(oldAutoClaveRecord)
-        newAutoClaveRecord = ACTimeDomainAnalysisOBS(self, oldAutoClaveRecord, self.dataSet).run()
-        """
-        for claveId in range(1,8):
-            singleAutoClaveRecord = newAutoClaveRecord.getSet(claveId)
-            print('ClaveId '+str(claveId)+"     AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA")
-            for event in singleAutoClaveRecord.getSet():
-                print('Prefix '+event.getPrefix()+"        EEEEEEEEEEEEEEEEEE")
-                print('startTime  '+str(datetime.fromtimestamp(event.getStartTime())))
-                print('endTime    '+str(datetime.fromtimestamp(event.getEndTime())))
-                for i in range (0,len(event.getSet('list'))):
-                    record = event.getSet('list')[i]
-                    print("inPress "+str(record.getInPress())+" inTemp "+str(record.getInTemp()))
-        """
-        self.obsDataTool.postData(newAutoClaveRecord)
+        maxIter = 10
+        iter = 0
+        ifAllEnd = 0
+        while ifAllEnd == 0 and iter < maxIter:
+            oldAutoClaveRecord = AutoClaveRecordDataSet(self.claveNum, self.nowTime)
+            oldAutoClaveRecord = self.obsDataTool.getData(oldAutoClaveRecord)
+            newAutoClaveRecord, ifAllEnd = ACTimeDomainAnalysisOBS(self, oldAutoClaveRecord, self.dataSet).run()
+            self.obsDataTool.postData(newAutoClaveRecord)
+            time.sleep(1)
         
 
-        pass
 
