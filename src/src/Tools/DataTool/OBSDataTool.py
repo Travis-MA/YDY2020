@@ -5,8 +5,8 @@ import json
 import os
 import sys
 from model.Tools import DataTool
-sys.path.append('..//lib') #linux
-#sys.path.append('..\\lib') #win
+#sys.path.append('..//lib') #linux
+sys.path.append('..\\lib') #win
 from obs import ObsClient, Object, DeleteObjectsRequest, PutObjectHeader
 from configparser import ConfigParser
 

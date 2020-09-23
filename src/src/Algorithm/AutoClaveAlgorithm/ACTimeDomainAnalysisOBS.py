@@ -22,10 +22,10 @@ class ACTimeDomainAnalysisOBS(Algorithm):
         return "ACTimeDomainAnalysisOBS"
 
     def run(self):
+        ifEnd = []
         for claveId in range(1,self.realTimeRecord.getClaveNum()+1):
             print('for clave:'+str(claveId))
             startTime = 0
-            ifEnd = 0
             oldState = ""
 
             #找到最新纪录时间，分两种情况，1是全部是FIN，所以开始时间算作最后一个FIN的结束时间
@@ -46,70 +46,41 @@ class ACTimeDomainAnalysisOBS(Algorithm):
                         oldState = "FIN"
 
             #实时record list
-            recordList = self.realTimeRecord.getSet(claveId).getSet('list')
-            dataSet = self.__toNumPy(recordList,[1/6,1/6,1/6,1/6,1/6,1/6])
+            dataSet = self.realTimeRecord.getSet(claveId).getSet('numpy')
 
             print('ClaveId '+str(claveId)+' sttime: '+str(startTime)+'  oldState: '+oldState)
             
-            #如果上一次记录的state是FIN， 要找新的事件
+            #如果上一次记录的state是FIN， 要找新的事件, 没有新的事件则不录
+            time = 0
             if oldState == 'FIN':
                 time = self.__startEventDetect(dataSet, startTime, 0.05)
                 if(time > 0):
                     ev = self.dataObj.newEvent('XING',claveId)
-                    ev = self.__writeContent(claveId, recordList,ev,time,0)
-                    ev = self.__stateDetect(recordList,ev)
-                    print('evPrefix newIng: '+ev.getPrefix()+' length: '+str(len(ev.getSet('list'))))
+                    ev = self.__writeContent(claveId, dataSet,ev,time,0)
+                    print('evPrefix newIng: '+ev.getPrefix()+' time '+str(time))
                     self.dataObj.getSet(claveId).pushData(ev)
             
-            #如果上一次记录的state是ING，则判断是否结束
+            #如果上一次记录的state是ING，则判断是否结束， 若没有结束就更新数据， 有结束则新建FIN
             elif oldState == 'ING':
-                time = self.__endEventDetect(recordList, startTime, 0.05)
-                event = self.__writeContent(claveId, recordList,event,startTime,time)
-                print('evPrefix: '+event.getPrefix()+' length: '+str(len(event.getSet('list'))))
-                event = self.__stateDetect(recordList, event)
+                time = self.__endEventDetect(dataSet, startTime, 0.05)
+                ev = self.__writeContent(claveId, dataSet,event,startTime,time)
+                print('evPrefix refreshING/New FIN: '+ev.getPrefix()+' time '+str(time))
+                self.dataObj.getSet(claveId).pushData(ev)
+                if time == 0:
+                    ifEnd.append(1)
+        
+        total = 0
+        ifAllEnd = 0
+        for ele in range(0, len(ifEnd)):
+            total = total + ifEnd[ele]
+            
+        if total == self.realTimeRecord.getClaveNum():
+            ifAllEnd = 1
 
-            #self.__toNumPy(recordList)
-
-        return {self.dataObj, ifEnd}
-
-
-
-    def __toNumPy(self, recordList, window):
-        #得到实时数据
-        timeList = []
-        inTempList =  []
-        outTempList = []
-        inPressList = []
-        stateList = []
-
-        for autoClaveData in recordList:
-            time = int(autoClaveData.getTime())
-
-            inTemp = autoClaveData.getInTemp()
-            outTemp = autoClaveData.getOutTemp()
-            inPress = autoClaveData.getInPress()
-            state = autoClaveData.getState()
-
-            timeList.append(time)
-            inTempList.append(inTemp/100)
-            outTempList.append(outTemp/100)
-            inPressList.append(inPress/100)
-            stateList.append(state)
+        return {self.dataObj, ifAllEnd}
 
 
-                #print("Id:"+str(claveId)+" T:"+str(time)+" iT:"+str(inTemp)+" oT:"+str(outTemp)+" iP:"+str(inPress)+" S:"+str(state))
-
-        dataSet = np.array([timeList, inTempList, outTempList, inPressList, stateList])
-        start = int(len(window)/2)
-        conv1 = np.convolve(dataSet[1,:], window)
-        conv2 = np.convolve(dataSet[2,:], window)
-        conv3 = np.convolve(dataSet[3,:], window)
-        dataSet[1,:] = conv1[start:start+dataSet.shape[1]]
-        dataSet[2,:] = conv2[start:start+dataSet.shape[1]]
-        dataSet[3,:] = conv3[start:start+dataSet.shape[1]]
-        return dataSet
-
-    def __writeContent(self, claveId, recordList, event, startTime, endTime):
+    def __writeContent(self, claveId, dataSet, event, startTime, endTime):
 
         if event.getType()=='SingleAutoClaveRecordEvent':
             event.setStartTime(startTime)
@@ -120,19 +91,16 @@ class ACTimeDomainAnalysisOBS(Algorithm):
                 event.setPrefix(str(claveId)+"XING"+str(startTime)+"Y")
             else:
                 event.setPrefix(str(claveId)+"XFIN"+str(startTime)+"Y"+str(endTime))
+            
+            for data in np.nditer(dataSet, flags=['external_loop'], order='F'):
 
-            for autoClaveData in recordList:
-                time = int(autoClaveData.getTime())
-                if time >= startTime and time <= endTime:
-                    dataObj = AutoClaveRecordData(event.getClaveId(), time)
+                if data[0] >= startTime and data[0] <= endTime:
+                    dataObj = AutoClaveRecordData(event.getClaveId(), data[0])
 
-                    dataObj.setInTemp(autoClaveData.getInTemp(), autoClaveData.getInTempDiff())
-
-                    dataObj.setOutTemp(autoClaveData.getOutTemp(), autoClaveData.getOutTempDiff())
-
-                    dataObj.setInPress(autoClaveData.getInPress(), autoClaveData.getInPressDiff())
-
-                    dataObj.setState(autoClaveData.getState(), self.__getState(autoClaveData.getState()))
+                    dataObj.setInTemp(data[1])
+                    dataObj.setOutTemp(data[2])
+                    dataObj.setInPress(data[3])
+                    dataObj.setState(self.__getState(data[4]))
      
                     event.pushData(dataObj)
             
@@ -140,7 +108,8 @@ class ACTimeDomainAnalysisOBS(Algorithm):
         else:
             print('DataType Error')
 
-
+#要求  1，如果state有记录，startTime选在 state变为关门的那一刻的前5分钟
+#      2，如果state没有记录， startTime选在之前蒸养结束后5分钟
     def __startEventDetect(self, dataSet, startTime, tresh):
 
 
@@ -156,7 +125,6 @@ class ACTimeDomainAnalysisOBS(Algorithm):
         if dataSet[:,j][3] >= tresh:
             while dataSet[:,j][3] >= tresh and j > ts:
                 j = j - 1
-                print(dataSet[:,j])
         else:
             pass
         while not (dataSet[:,j][3] > tresh or self.__getState(dataSet[:,j+1][4]) != self.__getState(dataSet[:,j][4])) and j > ts:
@@ -165,86 +133,64 @@ class ACTimeDomainAnalysisOBS(Algorithm):
         
         
         return int(time_a)
-        
-
-    def __endEventDetect(self, recordList, startTime, tresh):
-        time = 0
-        flag = 0
-        first = 0
-        for i in range(2,len(recordList)-2):
-            if time == 0:
-                autoClaveData = recordList[i]   
-                rectime = int(autoClaveData.getTime())
-                if(rectime > startTime):
-                    if flag == 0 and recordList[i].getInPress() >= tresh:
-                        first = 1
-                    flag = 1
-
-                    rec = [recordList[i-2].getInPress(), recordList[i-1].getInPress(), recordList[i].getInPress(), recordList[i+1].getInPress(), recordList[i+2].getInPress()]
-
-                    if rec[4] >= tresh and rec[3] >= tresh and rec[2] >= tresh and rec[1] < tresh and rec[0] < tresh:
-                        if first == 0:
-                            first = 1
-                        else:
-                            time = recordList[i].getTime()
-
-                    if self.__getState(recordList[i-1].getState())=='S12' and self.__getState(recordList[i].getState())=='S1':
-                        time = recordList[i+1].getTime() 
-
-            else:
-                pass
-        return int(time)
-
-    def __stateDetect(self, recordList, event):
-        stateNameList = ['釜门开','釜门关','开始预养','从邻釜导气','从隔釜导气','升压','恒压','给邻釜预养','导气到邻釜','导气到隔釜','降压','排空']
-        startTime = event.getStartTime()
-        endTime = event.getEndTime()
-        if(endTime == 0):
-            endTime = 1000000000000000
-
-        index = 0
-        for i in range(1,len(recordList)):
-            autoClaveData = recordList[i]
-            rectime = int(autoClaveData.getTime())
-            if rectime >= startTime and rectime <= endTime:
-                if self.__getState(recordList[i-1].getState())=='S12' and self.__getState(recordList[i].getState())=='S1':
-                    recDict = {'name':stateNameList[0], 'time':rectime, 'index': index}
-                    event.pushStateTime(recDict)              
-
-                for si in range (1, 12):
-                    if self.__getState(recordList[i-1].getState())=='S'+str(si) and self.__getState(recordList[i].getState())=='S'+str(si+1):
-                        recDict = {'name':stateNameList[si], 'time':rectime, 'index': index}
-                        event.pushStateTime(recDict)
-
-
-                index = index+1
-
-        return event
     
+
+    #要求  1，如果state有记录，startTime选在 state变为开门的那一刻的后5分钟
+    #      2，如果state没有记录， startTime选在之前蒸养开始前5分钟
+    def __endEventDetect(self, dataSet, startTime, tresh):
+        
+        time_a = 0
+        ts = 5
+        j = ts
+        
+        while dataSet[:,j][0] <= startTime and j<dataSet.shape[1]-1:
+            j = j + 1
+            
+
+        while j<dataSet.shape[1]-1 and (dataSet[:,j][3]-dataSet[:,j-1][3] < 0 or dataSet[:,j][3]<= tresh):
+            j = j + 1
+
+        while j<dataSet.shape[1]-1 and (dataSet[:,j][3]-dataSet[:,j-1][3] >= 0 or dataSet[:,j][3]>tresh):
+            j = j + 1
+
+        while j<dataSet.shape[1]-1 and (dataSet[:,j][3]-dataSet[:,j-1][3] < 0 or dataSet[:,j][3] <= tresh) and (self.__getState(dataSet[:,j+1][4])*self.__getState(dataSet[:,j][4])!=12):
+            j = j + 1
+
+        if (j>=dataSet.shape[1]-2):
+            time_a = 0
+        else:
+            if (dataSet[:,j][3]-dataSet[:,j-1][3] > 0 and dataSet[:,j][3] >= tresh):
+                time_a = dataSet[:,j-ts][0]
+            
+            if (self.__getState(dataSet[:,j+1][4])*self.__getState(dataSet[:,j][4])==12):
+                time_a = dataSet[:,j+ts][0]
+        
+        
+        return int(time_a)  
 
     def __getState(self, val):
         itv = 340
         if val > 0*itv and val <= 1*itv:
-            return 'S1'
+            return 1
         elif val > 1*itv and val <= 2*itv:
-            return 'S2'
+            return 2
         elif val > 2*itv and val <= 3*itv:
-            return 'S3'
+            return 3
         elif val > 3*itv and val <= 4*itv:
-            return 'S4'
+            return 4
         elif val > 4*itv and val <= 5*itv:
-            return 'S5'
+            return 5
         elif val > 5*itv and val <= 6*itv:
-            return 'S6'
+            return 6
         elif val > 6*itv and val <= 7*itv:
-            return 'S7'
+            return 7
         elif val > 7*itv and val <= 8*itv:
-            return 'S8'
+            return 8
         elif val > 8*itv and val <= 9*itv:
-            return 'S9'
+            return 9
         elif val > 9*itv and val <= 10*itv:
-            return 'S10'
+            return 10
         elif val > 10*itv and val <= 11*itv:
-            return 'S11'
+            return 11
         elif val > 11*itv and val <= 4095:
-            return 'S12'
+            return 12

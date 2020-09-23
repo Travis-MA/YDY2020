@@ -1,5 +1,6 @@
 import abc
 import json
+import numpy as np
 from model.DataSet import DataSet
 print('okok')
 
@@ -40,14 +41,55 @@ class SingleAutoClaveRealtimeDataSet(DataSet):
                 recordListJson.append(recDict)
             obsRecDict = {'claveId':self.getClaveID(), 'lastTime':self.getLastTime(), 'records':recordListJson}
             return json.dumps(obsRecDict)
-        else:
+        
+        elif type == 'numpy':
+            return self.__toNumPy(self.__recordList, [1/6,1/6,1/6,1/6,1/6,1/6])
+        
+        elif type == 'list:':
             return self.__recordList
+
 
     def getLastTime(self):
         if len(self.__recordList) > 0:
             return self.__recordList[-1].getTime()
         else:
             return 0
+
+    def __toNumPy(self, recordList, window):
+        #得到实时数据
+        timeList = []
+        inTempList =  []
+        outTempList = []
+        inPressList = []
+        stateList = []
+
+        for autoClaveData in recordList:
+            time = int(autoClaveData.getTime())
+
+            inTemp = autoClaveData.getInTemp()
+            outTemp = autoClaveData.getOutTemp()
+            inPress = autoClaveData.getInPress()
+            state = autoClaveData.getState()
+
+            timeList.append(time)
+            inTempList.append(inTemp)
+            outTempList.append(outTemp)
+            inPressList.append(inPress)
+            stateList.append(state)
+
+
+                #print("Id:"+str(claveId)+" T:"+str(time)+" iT:"+str(inTemp)+" oT:"+str(outTemp)+" iP:"+str(inPress)+" S:"+str(state))
+
+        dataSet = np.array([timeList, inTempList, outTempList, inPressList, stateList])
+        start = int(len(window)/2)
+        conv1 = np.convolve(dataSet[1,:], window)
+        conv2 = np.convolve(dataSet[2,:], window)
+        conv3 = np.convolve(dataSet[3,:], window)
+        dataSet[1,:] = conv1[start:start+dataSet.shape[1]]
+        dataSet[2,:] = conv2[start:start+dataSet.shape[1]]
+        dataSet[3,:] = conv3[start:start+dataSet.shape[1]]
+        return dataSet
+
 
 
 #蒸压釜实时数据

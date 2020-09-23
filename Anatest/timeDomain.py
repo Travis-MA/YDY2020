@@ -73,20 +73,23 @@ def endEventDetect(dataSet, startTime, tresh):
         j = j + 1
         
 
-    while dataSet[:,j][3]-dataSet[:,j-1][3] < 0 or dataSet[:,j][3]<= tresh:
+    while j<dataSet.shape[1]-1 and (dataSet[:,j][3]-dataSet[:,j-1][3] < 0 or dataSet[:,j][3]<= tresh):
         j = j + 1
 
-    while dataSet[:,j][3]-dataSet[:,j-1][3] >= 0 or dataSet[:,j][3]>tresh:
+    while j<dataSet.shape[1]-1 and (dataSet[:,j][3]-dataSet[:,j-1][3] >= 0 or dataSet[:,j][3]>tresh):
         j = j + 1
 
-    while dataSet[:,j][3]-dataSet[:,j-1][3] < 0 or dataSet[:,j][3] < tresh:
+    while j<dataSet.shape[1]-1 and (dataSet[:,j][3]-dataSet[:,j-1][3] < 0 or dataSet[:,j][3] <= tresh) and (getState(dataSet[:,j+1][4])*getState(dataSet[:,j][4])!=12):
         j = j + 1
 
+    if (j>=dataSet.shape[1]-2):
+        time_a = 0
     else:
-        pass
-    while not (dataSet[:,j][3] > tresh or getState(dataSet[:,j+1][4])*getState(dataSet[:,j][4])==12) and j > ts:
-        j = j - 1
-    time_a = dataSet[:,j-ts][0]
+        if (dataSet[:,j][3]-dataSet[:,j-1][3] > 0 and dataSet[:,j][3] >= tresh):
+            time_a = dataSet[:,j-ts][0]
+        
+        if (getState(dataSet[:,j+1][4])*getState(dataSet[:,j][4])==12):
+            time_a = dataSet[:,j+ts][0]
     
     
     return int(time_a)   
@@ -143,8 +146,14 @@ axs[1].plot(dataSet[0,:], conv3[3:1366])  # Plot some data on the axes.
 dif = np.diff(conv3,1)
 axs[2].plot(dataSet[0,:], dif[2:1365])
 
-print(startEventDetect(dataSet, 1600387000, 0.05))
+print(startEventDetect(dataSet, 1600338000, 0.05))
 plt.show()
 
-
+for data in np.nditer(dataSet, flags=['external_loop'], order='F'):
+    print(data[0])
+    print(data[1])
+    print(data[2])
+    print(data[3])
+    print(data[4])
+    print('F')
 

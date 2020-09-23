@@ -62,14 +62,9 @@ class ACGetDataDIS(Algorithm):
                         outTemp = float(properties[outTempChannel]) * float(outTempSlope) + float(outTempShift)
                         inPress = float(properties[inPressChannel]) * float(inPressSlope) + float(inPressShift)
 
-                        inTempDiff = inTemp-oldInTemp
-                        outTempDiff = outTemp-oldOutTemp
-                        inPressDiff = inPress-oldInPress
-                        timeDiff = (time-oldTime)/3600 #每小时
-
-                        recData.setInTemp(inTemp, inTempDiff/timeDiff)
-                        recData.setOutTemp(outTemp, outTempDiff/timeDiff)
-                        recData.setInPress(inPress, inPressDiff/timeDiff)
+                        recData.setInTemp(inTemp)
+                        recData.setOutTemp(outTemp)
+                        recData.setInPress(inPress)
 
                         recData.setState(float(properties[stateChannel]))
 
