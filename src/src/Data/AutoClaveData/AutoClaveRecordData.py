@@ -1,6 +1,5 @@
 import abc
 from model.Data import Data
-print('okok')
 
 #蒸压釜记录
 class AutoClaveRecordData(Data):

@@ -1,6 +1,5 @@
 import abc
 from model.Data import Data
-print('okok')
 
 #蒸压釜实时数据
 class AutoClaveRealTimeData(Data):

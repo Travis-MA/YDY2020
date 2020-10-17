@@ -2,7 +2,6 @@ import abc
 import json
 import numpy as np
 from model.DataSet import DataSet
-print('okok')
 
 dev_prefix = '5f61ea5045765502bcee8ab6_0'
 
