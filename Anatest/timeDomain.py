@@ -8,9 +8,11 @@ import matplotlib.pyplot as plt
 
 
 def getState(val):
+    offset = 186
+    val = val+offset
     itv = 372
-    if val > 0*itv and val <= 1*itv:
-        return 1
+    if val > 0 and val <= 1*itv:
+        return 1 #0
     elif val > 1*itv and val <= 2*itv:
         return 2
     elif val > 2*itv and val <= 3*itv:
@@ -31,7 +33,7 @@ def getState(val):
         return 10
     elif val > 10*itv and val <= 11*itv:
         return 11
-    elif val > 11*itv and val <= 4095:
+    elif val > 11*itv and val <= 4095+offset:
         return 12
 
 

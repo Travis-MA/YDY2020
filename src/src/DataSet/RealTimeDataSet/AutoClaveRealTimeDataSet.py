@@ -79,16 +79,18 @@ class SingleAutoClaveRealtimeDataSet(DataSet):
 
 
                 #print("Id:"+str(claveId)+" T:"+str(time)+" iT:"+str(inTemp)+" oT:"+str(outTemp)+" iP:"+str(inPress)+" S:"+str(state))
-
-        dataSet = np.array([timeList, inTempList, outTempList, inPressList, stateList])
-        start = int(len(window)/2)
-        conv1 = np.convolve(dataSet[1,:], window)
-        conv2 = np.convolve(dataSet[2,:], window)
-        conv3 = np.convolve(dataSet[3,:], window)
-        dataSet[1,:] = conv1[start:start+dataSet.shape[1]]
-        dataSet[2,:] = conv2[start:start+dataSet.shape[1]]
-        dataSet[3,:] = conv3[start:start+dataSet.shape[1]]
-        return dataSet
+        try:
+            dataSet = np.array([timeList, inTempList, outTempList, inPressList, stateList])
+            start = int(len(window)/2)
+            conv1 = np.convolve(dataSet[1,:], window)
+            conv2 = np.convolve(dataSet[2,:], window)
+            conv3 = np.convolve(dataSet[3,:], window)
+            dataSet[1,:] = conv1[start:start+dataSet.shape[1]]
+            dataSet[2,:] = conv2[start:start+dataSet.shape[1]]
+            dataSet[3,:] = conv3[start:start+dataSet.shape[1]]
+            return dataSet
+        except:
+            return [0]
 
 
 

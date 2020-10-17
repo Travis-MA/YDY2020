@@ -24,9 +24,9 @@ class ACRecordOBS:
         for claveId in range (1,claveNum+1):
             singleClaveEventList = self.dataObj.getSet(claveId).getSet()
             for event in singleClaveEventList:
-                print('writeEvent '+str(event.getPrefix()))
+                #print('writeEvent '+str(event.getPrefix()))
                 if(event.getSet('json') != 0):
-                    print('okwrtie '+str(event.getPrefix()))
+                    #print('okwrtie '+str(event.getPrefix()))
                     self.OBSTool.writeContent(prefix = todayFolderPath+event.getPrefix(), metaData = str(event.getSet('json'))) #新建今日文件夹
 
                     

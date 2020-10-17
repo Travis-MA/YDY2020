@@ -22,9 +22,9 @@ class ACTimeDomainAnalysisOBS(Algorithm):
         return "ACTimeDomainAnalysisOBS"
 
     def run(self):
-        ifEnd = []
+        total = 0
         for claveId in range(1,self.realTimeRecord.getClaveNum()+1):
-            print('for clave:'+str(claveId))
+            #print('for clave:'+str(claveId))
             startTime = 0
             oldState = ""
 
@@ -49,31 +49,30 @@ class ACTimeDomainAnalysisOBS(Algorithm):
             dataSet = self.realTimeRecord.getSet(claveId).getSet('numpy')
 
             print('ClaveId '+str(claveId)+' sttime: '+str(startTime)+'  oldState: '+oldState)
-            
-            #如果上一次记录的state是FIN， 要找新的事件, 没有新的事件则不录
-            time = 0
-            if oldState == 'FIN':
-                time = self.__startEventDetect(dataSet, startTime, 0.05)
-                if(time > 0):
-                    ev = self.dataObj.newEvent('XING',claveId)
-                    ev = self.__writeContent(claveId, dataSet,ev,time,0)
-                    print('evPrefix newIng: '+ev.getPrefix()+' time '+str(time))
+            if dataSet[0].all() != 0:
+                #如果上一次记录的state是FIN， 要找新的事件, 没有新的事件则不录
+                time = 0
+                if oldState == 'FIN':
+                    time = self.__startEventDetect(dataSet, startTime, 0.05)
+                    if(time > 0):
+                        ev = self.dataObj.newEvent('XING',claveId)
+                        ev = self.__writeContent(claveId, dataSet,ev,time,0)
+                        print('evPrefix newIng: '+ev.getPrefix()+' time '+str(time))
+                        self.dataObj.getSet(claveId).pushData(ev)
+
+                #如果上一次记录的state是ING，则判断是否结束， 若没有结束就更新数据， 有结束则新建FIN
+                elif oldState == 'ING':
+                    time = self.__endEventDetect(dataSet, startTime, 0.05)
+
+                    ev = self.dataObj.newEvent('XFIN', claveId)
+                    ev = self.__writeContent(claveId, dataSet,ev,startTime,time)
+                    print('New FIN/Ref ING: '+ev.getPrefix()+' time '+str(time))
                     self.dataObj.getSet(claveId).pushData(ev)
-            
-            #如果上一次记录的state是ING，则判断是否结束， 若没有结束就更新数据， 有结束则新建FIN
-            elif oldState == 'ING':
-                time = self.__endEventDetect(dataSet, startTime, 0.05)
-                ev = self.__writeContent(claveId, dataSet,event,startTime,time)
-                print('evPrefix refreshING/New FIN: '+ev.getPrefix()+' time '+str(time))
-                self.dataObj.getSet(claveId).pushData(ev)
-                if time == 0:
-                    ifEnd.append(1)
-        
-        total = 0
+
+                    if time == 0:
+                        total = total + 1
+
         ifAllEnd = 0
-        for ele in range(0, len(ifEnd)):
-            total = total + ifEnd[ele]
-            
         if total == self.realTimeRecord.getClaveNum():
             ifAllEnd = 1
 
@@ -85,7 +84,7 @@ class ACTimeDomainAnalysisOBS(Algorithm):
             event.setStartTime(startTime)
             event.setEndTime(endTime)
 
-            if(endTime == 0):
+            if(endTime <= 0):
                 endTime = 1000000000000000
                 event.setPrefix(str(claveId)+"XING"+str(startTime)+"Y")
             else:
@@ -134,7 +133,7 @@ class ACTimeDomainAnalysisOBS(Algorithm):
     #      2，如果state没有记录， startTime选在之前蒸养开始前5分钟
     def __endEventDetect(self, dataSet, startTime, tresh):
         
-        time_a = 0
+        time_a = -1
         ts = 5
         j = ts
         
@@ -152,6 +151,7 @@ class ACTimeDomainAnalysisOBS(Algorithm):
 
         if (j>=dataSet.shape[1]-2):
             time_a = 0
+
         else:
             if (dataSet[:,j][3]-dataSet[:,j-1][3] > 0 and dataSet[:,j][3] >= tresh):
                 time_a = dataSet[:,j-ts][0]

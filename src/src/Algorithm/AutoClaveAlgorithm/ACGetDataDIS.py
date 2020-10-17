@@ -67,12 +67,6 @@ class ACGetDataDIS(Algorithm):
                         recData.setInPress(inPress)
 
                         recData.setState(float(properties[stateChannel]))
-
-                        oldInTemp = inTemp
-                        oldOutTemp = outTemp
-                        oldInPress = inPress
-                        oldTime = time
-
                         self.dataObj.pushData(claveId, recData)
                     except:
                         pass

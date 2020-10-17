@@ -14,9 +14,6 @@ from src.Algorithm.AutoClaveAlgorithm.ACGetDataDIS import ACGetDataDIS
 
 #DIS数据工具
 class DISDataTool(DataTool):
-    
-    print(sys.path)
-
 
     __confPath = ''
     __streamName = ''
@@ -41,7 +38,7 @@ class DISDataTool(DataTool):
     # Download data
     def getRecords_test(self):
         cursor=self.getCursor_test()
-        print('cursor '+cursor)
+        #print('cursor '+cursor)
         records = []
         try:
             while cursor:
@@ -70,7 +67,6 @@ class DISDataTool(DataTool):
     def getData(self, dataObj):
         if dataObj.getType() == 'AutoClaveRealTimeDataSet':          
             return ACGetDataDIS(self,dataObj).run()
-
         else:
             pass
 

@@ -24,13 +24,20 @@ class ACRecordInitOBS:
         todayFolderPath = folderPath+offSetTime.date().isoformat()+'/'
         todayRecordList = self.OBSTool.listObject(todayFolderPath)
         if(len(todayRecordList)>0): #有今天的
+
             for claveId in range(1, claveNum+1):
+                claveCheck = 0
                 for content in todayRecordList:
                     Xindex = content.key.find("X")
+                    #保证每条釜都有
+
                     if(content.key[Xindex-1:Xindex]==str(claveId)):
+                        claveCheck = 1
                         self.dataObj.getSet(claveId).pushData(content.key)
                         if content.key[Xindex+1:Xindex+4] == 'ING':
                             self.OBSTool.deleteObject(content.key)
+                if claveCheck == 0:
+                    self.newRecord(claveId, todayInitial, offSetTime)
 
             print('hasToday')
         else: #没有今天的

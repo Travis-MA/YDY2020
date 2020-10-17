@@ -37,9 +37,6 @@ class OBSDataTool(DataTool):
             return dataObj
 
         elif dataObj.getType() == 'AutoClaveRealTimeDataSet':
-
-
-        
             pass
     
     def postData(self, dataObj):
@@ -58,27 +55,20 @@ class OBSDataTool(DataTool):
 
     def deleteObject(self, prefix):
         resp = self.__obsClient.deleteObject(self.__bucketName, prefix)
-        if resp.status < 300:
-            print('Delete object ' + prefix + ' successfully!\n')
-        else:
-            print('common msg:status:', resp.status, 'prefix ', prefix, ',errorCode:', resp.errorCode, ',errorMessage:', resp.errorMessage)
+        if resp.status >= 300:
+            print('OBS DELETE obj: common msg:status:', resp.status, 'prefix ', prefix, ',errorCode:', resp.errorCode, ',errorMessage:', resp.errorMessage)
 
     def copyObject(self, fromPrefix, toPrefix):
         resp = self.__obsClient.copyObject(self.__bucketName, fromPrefix, self.__bucketName, toPrefix)
 
-        if resp.status < 300:
-            print('Copy Success!')
-        else:
-            print('errorCode:', resp.errorCode)
-            print('errorMessage:', resp.errorMessage)
+        if resp.status >= 300:
+            print('OBS copy obj:errorCode:', resp.errorCode)
+            print('OBS copy obj:errorMessage:', resp.errorMessage)
 
     def listObject(self, prefix):
         # 调用listObjects接口列举指定桶内的所有对象
         resp = self.__obsClient.listObjects(self.__bucketName, prefix=prefix)
-        if resp.status < 300: 
-            # 输出请求Id   
-            print('requestId:', resp.requestId)
-            print(prefix)
+        if resp.status < 300:
             index = 0
             # 遍历输出所有对象信息
             objList = []
@@ -91,18 +81,16 @@ class OBSDataTool(DataTool):
             return objList
         else:  
             # 输出错误码  
-            print('errorCode:', resp.errorCode)
+            print('OBS listobj:errorCode:', resp.errorCode)
             # 输出错误信息
-            print('errorMessage:', resp.errorMessage)
+            print('OBS listobj:errorMessage:', resp.errorMessage)
 
 
     def writeContent(self, prefix, metaData):
 
         resp = self.__obsClient.putContent(self.__bucketName, prefix, metaData)
-        if resp.status < 300:
-            print('Create object ' + prefix + ' successfully!\n')
-        else:
-            print('common msg:status:', resp.status, ',errorCode:', resp.errorCode, ',errorMessage:', resp.errorMessage)
+        if resp.status >= 300:
+            print('OBS create obj:common msg:status:', resp.status, ',errorCode:', resp.errorCode, ',errorMessage:', resp.errorMessage)
 
 
     def listObjectsInFolder(self, folderPrefix):
