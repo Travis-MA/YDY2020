@@ -70,17 +70,23 @@ def endEventDetect(dataSet, startTime, tresh):
     time_a = 0
     ts = 5
     j = ts
-    
+
+    #移动游标到最新的时间
     while dataSet[:,j][0] <= startTime and j<dataSet.shape[1]-1:
         j = j + 1
-        
 
+    initval = dataSet[:,j][3]
+
+    #函数曲线递减或者值小于阈值
     while j<dataSet.shape[1]-1 and (dataSet[:,j][3]-dataSet[:,j-1][3] < 0 or dataSet[:,j][3]<= tresh):
         j = j + 1
 
-    while j<dataSet.shape[1]-1 and (dataSet[:,j][3]-dataSet[:,j-1][3] >= 0 or dataSet[:,j][3]>tresh):
-        j = j + 1
+    if initval < 2*tresh:
+        #函数曲线递增或者值大于阈值
+        while j<dataSet.shape[1]-1 and (dataSet[:,j][3]-dataSet[:,j-1][3] >= 0 or dataSet[:,j][3]>tresh):
+            j = j + 1
 
+    #函数曲线递减或值小于阈值，并且前后个阶段不是1和12
     while j<dataSet.shape[1]-1 and (dataSet[:,j][3]-dataSet[:,j-1][3] < 0 or dataSet[:,j][3] <= tresh) and (getState(dataSet[:,j+1][4])*getState(dataSet[:,j][4])!=12):
         j = j + 1
 
@@ -122,40 +128,20 @@ for dataDict in records:
 
 
 
-dataSet = np.array([timeList, inTempList, outTempList, inPressList, stateList],dtype=float)
-print(type(dataSet))
-print(dataSet.shape)
 
 window = [1/6,1/6,1/6,1/6,1/6,1/6]
 
+dataSet = np.array([timeList, inTempList, outTempList, inPressList, stateList])
+start = int(len(window) / 2)
+conv1 = np.convolve(dataSet[1, :], window)
+conv2 = np.convolve(dataSet[2, :], window)
+conv3 = np.convolve(dataSet[3, :], window)
+dataSet[1, :] = conv1[start:start + dataSet.shape[1]]
+dataSet[2, :] = conv2[start:start + dataSet.shape[1]]
+dataSet[3, :] = conv3[start:start + dataSet.shape[1]]
 
-
-
-
-shift = 0
-
-fig, axs = plt.subplots(3,1)  # Create a figure containing a single axes.
-axs[0].plot(dataSet[0,:],dataSet[3,:])
-start = int(len(window)/2)
-start = int(len(window)/2)
-conv1 = np.convolve(dataSet[1,:], window)
-conv2 = np.convolve(dataSet[2,:], window)
-conv3 = np.convolve(dataSet[3,:], window)
-dataSet[1,:] = conv1[start:start+dataSet.shape[1]]
-dataSet[2,:] = conv2[start:start+dataSet.shape[1]]
-dataSet[3,:] = conv3[start:start+dataSet.shape[1]]
-axs[1].plot(dataSet[0,:], conv3[3:1366])  # Plot some data on the axes.
-dif = np.diff(conv3,1)
-axs[2].plot(dataSet[0,:], dif[2:1365])
-
-print(startEventDetect(dataSet, 1600338000, 0.05))
+print(endEventDetect(dataSet, 1602917386, 0.05))
+plt.plot(timeList,inPressList)
 plt.show()
 
-for data in np.nditer(dataSet, flags=['external_loop'], order='F'):
-    print(data[0])
-    print(data[1])
-    print(data[2])
-    print(data[3])
-    print(data[4])
-    print('F')
 

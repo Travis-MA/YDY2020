@@ -136,10 +136,10 @@ class ACTimeDomainAnalysisOBS(Algorithm):
         time_a = -1
         ts = 5
         j = ts
-        
+
         while dataSet[:,j][0] <= startTime and j<dataSet.shape[1]-1:
             j = j + 1
-            
+
         while j<dataSet.shape[1]-1 and (dataSet[:,j][3]-dataSet[:,j-1][3] < 0 or dataSet[:,j][3]<= tresh):
             j = j + 1
 
@@ -151,15 +151,14 @@ class ACTimeDomainAnalysisOBS(Algorithm):
 
         if (j>=dataSet.shape[1]-2):
             time_a = 0
-
         else:
             if (dataSet[:,j][3]-dataSet[:,j-1][3] > 0 and dataSet[:,j][3] >= tresh):
                 time_a = dataSet[:,j-ts][0]
-            
+
             if (self.__getState(dataSet[:,j+1][4])*self.__getState(dataSet[:,j][4])==12):
                 time_a = dataSet[:,j+ts][0]
               
-        return int(time_a)  
+        return int(time_a)
 
     def __getState(self, val):
         itv = 372
