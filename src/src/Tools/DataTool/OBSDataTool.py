@@ -5,8 +5,8 @@ import json
 import os
 import sys
 from model.Tools import DataTool
-#sys.path.append('..//lib') #linux
-sys.path.append('..\\lib') #win
+sys.path.append('..//lib') #linux
+#sys.path.append('..\\lib') #win
 from obs import ObsClient, Object, DeleteObjectsRequest, PutObjectHeader
 from configparser import ConfigParser
 
@@ -93,13 +93,7 @@ class OBSDataTool(DataTool):
             print('OBS create obj:common msg:status:', resp.status, ',errorCode:', resp.errorCode, ',errorMessage:', resp.errorMessage)
 
 
-    def listObjectsInFolder(self, folderPrefix):
-        
-        resp = self.__obsClient.listObjects(self.__bucketName, folderPrefix)
-        for content in resp.body.contents:
-            print('\t' + content.key + ' etag[' + content.etag + ']')
 
-   
 
 
 

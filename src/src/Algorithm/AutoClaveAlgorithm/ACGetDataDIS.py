@@ -40,12 +40,6 @@ class ACGetDataDIS(Algorithm):
 
             stateChannel = conf.get('AutoClave'+str(claveId),'stateChannel')  
 
-
-            oldTime = 0
-            oldInTemp = 0.0
-            oldOutTemp = 0.0
-            oldInPress = 0.0  
-
             for devRec in sourceData:
                 data = json.loads(devRec['data'])
                 dev_id = data['device_id']

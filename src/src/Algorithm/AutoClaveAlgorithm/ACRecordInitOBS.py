@@ -19,6 +19,11 @@ class ACRecordInitOBS:
         nowTime = self.dataObj.getNowTime() #真实时间
         claveNum = self.dataObj.getClaveNum()
         offSetTime = nowTime-nowTime.tzinfo.utcoffset(nowTime) #减去7个小时的时间（今天上午七点前是昨天）
+
+        print('NowTime: '+str(nowTime))
+        print('OffsetTime: '+str(offSetTime))
+        print('..')
+
         offSetHour = int(nowTime.tzinfo.utcoffset(nowTime).total_seconds()/3600)
         todayInitial = datetime(year=nowTime.year, month=nowTime.month, day=nowTime.day,hour=offSetHour,minute=0,second=0)
         todayFolderPath = folderPath+offSetTime.date().isoformat()+'/'
@@ -39,9 +44,9 @@ class ACRecordInitOBS:
                 if claveCheck == 0:
                     self.newRecord(claveId, todayInitial, offSetTime)
 
-            print('hasToday')
+            #print('hasToday')
         else: #没有今天的
-            print('noToday')
+            #print('noToday')
 
 
             offSetTimeYestd = offSetTime-timedelta(days=1)
@@ -80,7 +85,7 @@ class ACRecordInitOBS:
 
         todayFolderPath = folderPath+offSetTime.date().isoformat()+'/'
         eventPrefix = todayFolderPath+str(claveId)+'XING'+str(int(todayInitial.timestamp())+claveId)+'Y'
-        print('newRecord: '+eventPrefix)
+        #print('newRecord: '+eventPrefix)
         self.dataObj.getSet(claveId).pushData(eventPrefix)
         
         #recordJson = json.dumps(recordDict)

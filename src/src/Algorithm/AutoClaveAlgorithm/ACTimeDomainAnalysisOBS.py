@@ -48,7 +48,7 @@ class ACTimeDomainAnalysisOBS(Algorithm):
             #实时record list
             dataSet = self.realTimeRecord.getSet(claveId).getSet('numpy')
 
-            print('ClaveId '+str(claveId)+' sttime: '+str(startTime)+'  oldState: '+oldState)
+            #print('ClaveId '+str(claveId)+' sttime: '+str(startTime)+'  oldState: '+oldState)
             if dataSet[0].all() != 0:
                 #如果上一次记录的state是FIN， 要找新的事件, 没有新的事件则不录
                 time = 0
@@ -57,7 +57,7 @@ class ACTimeDomainAnalysisOBS(Algorithm):
                     if(time > 0):
                         ev = self.dataObj.newEvent('XING',claveId)
                         ev = self.__writeContent(claveId, dataSet,ev,time,0)
-                        print('evPrefix newIng: '+ev.getPrefix()+' time '+str(time))
+                        #print('evPrefix newIng: '+ev.getPrefix()+' time '+str(time))
                         self.dataObj.getSet(claveId).pushData(ev)
 
                 #如果上一次记录的state是ING，则判断是否结束， 若没有结束就更新数据， 有结束则新建FIN
@@ -66,7 +66,7 @@ class ACTimeDomainAnalysisOBS(Algorithm):
 
                     ev = self.dataObj.newEvent('XFIN', claveId)
                     ev = self.__writeContent(claveId, dataSet,ev,startTime,time)
-                    print('New FIN/Ref ING: '+ev.getPrefix()+' time '+str(time))
+                    #print('New FIN/Ref ING: '+ev.getPrefix()+' time '+str(time))
                     self.dataObj.getSet(claveId).pushData(ev)
 
                     if time == 0:
@@ -110,23 +110,28 @@ class ACTimeDomainAnalysisOBS(Algorithm):
 #      2，如果state没有记录， startTime选在之前蒸养结束后5分钟
     def __startEventDetect(self, dataSet, startTime, tresh):
 
-        time_a = 0
         ts = 5
         j = ts
-        
-        while dataSet[:,j][0] <= startTime and j<dataSet.shape[1]-2:
-            j = j + 1
 
-        if dataSet[:,j][3] >= tresh:
-            while dataSet[:,j][3] >= tresh and j > ts:
+        try:
+            while dataSet[:,j][0] <= startTime and j<dataSet.shape[1]-2:
+                j = j + 1
+
+            if dataSet[:,j][3] >= tresh:
+                while dataSet[:,j][3] >= tresh and j > ts:
+                    j = j - 1
+            else:
+                pass
+            while not (dataSet[:,j][3] > tresh or self.__getState(dataSet[:,j+1][4]) != self.__getState(dataSet[:,j][4])) and j > ts:
                 j = j - 1
-        else:
-            pass
-        while not (dataSet[:,j][3] > tresh or self.__getState(dataSet[:,j+1][4]) != self.__getState(dataSet[:,j][4])) and j > ts:
-            j = j - 1
-        time_a = dataSet[:,j-ts][0]
-              
-        return int(time_a)
+
+            time_a = dataSet[:, j - ts][0]
+
+            return int(time_a)
+
+        except Exception as ex:
+            print('TimeDomainAnalysis startEvDetect' + str(ex))
+            return 0
     
 
     #要求  1，如果state有记录，startTime选在 state变为开门的那一刻的后5分钟
@@ -137,28 +142,33 @@ class ACTimeDomainAnalysisOBS(Algorithm):
         ts = 5
         j = ts
 
-        while dataSet[:,j][0] <= startTime and j<dataSet.shape[1]-1:
-            j = j + 1
+        try:
+            while dataSet[:,j][0] <= startTime and j<dataSet.shape[1]-1:
+                j = j + 1
 
-        while j<dataSet.shape[1]-1 and (dataSet[:,j][3]-dataSet[:,j-1][3] < 0 or dataSet[:,j][3]<= tresh):
-            j = j + 1
+            while j<dataSet.shape[1]-1 and (dataSet[:,j][3]-dataSet[:,j-1][3] < 0 or dataSet[:,j][3]<= tresh):
+                j = j + 1
 
-        while j<dataSet.shape[1]-1 and (dataSet[:,j][3]-dataSet[:,j-1][3] >= 0 or dataSet[:,j][3]>tresh):
-            j = j + 1
+            while j<dataSet.shape[1]-1 and (dataSet[:,j][3]-dataSet[:,j-1][3] >= 0 or dataSet[:,j][3]>tresh):
+                j = j + 1
 
-        while j<dataSet.shape[1]-1 and (dataSet[:,j][3]-dataSet[:,j-1][3] < 0 or dataSet[:,j][3] <= tresh) and (self.__getState(dataSet[:,j+1][4])*self.__getState(dataSet[:,j][4])!=12):
-            j = j + 1
+            while j<dataSet.shape[1]-1 and (dataSet[:,j][3]-dataSet[:,j-1][3] < 0 or dataSet[:,j][3] <= tresh) and (self.__getState(dataSet[:,j+1][4])*self.__getState(dataSet[:,j][4])!=12):
+                j = j + 1
 
-        if (j>=dataSet.shape[1]-2):
-            time_a = 0
-        else:
-            if (dataSet[:,j][3]-dataSet[:,j-1][3] > 0 and dataSet[:,j][3] >= tresh):
-                time_a = dataSet[:,j-ts][0]
+            if (j>=dataSet.shape[1]-2):
+                time_a = 0
+            else:
+                if (dataSet[:,j][3]-dataSet[:,j-1][3] > 0 and dataSet[:,j][3] >= tresh):
+                    time_a = dataSet[:,j-ts][0]
 
-            if (self.__getState(dataSet[:,j+1][4])*self.__getState(dataSet[:,j][4])==12):
-                time_a = dataSet[:,j+ts][0]
-              
-        return int(time_a)
+                if (self.__getState(dataSet[:,j+1][4])*self.__getState(dataSet[:,j][4])==12):
+                    time_a = dataSet[:,j+ts][0]
+
+            return int(time_a)
+
+        except Exception as ex:
+            print('TimeDomainAnalysis endEvDetect' + str(ex))
+            return 0
 
     def __getState(self, val):
         itv = 372

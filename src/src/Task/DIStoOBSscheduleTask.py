@@ -40,7 +40,7 @@ class DIStoOBSscheduleTask(ScheduleTask):
 
         hourOffset = 7
         today = datetime.today()
-        nowTime = datetime(year=today.year, month=today.month, day=today.day, hour=8, minute=0, second=0, microsecond=0, tzinfo=timezone(timedelta(hours=hourOffset)), fold=0)
+        nowTime = datetime(year=today.year, month=today.month, day=today.day, hour=today.hour, minute=today.minute, second=today.second, microsecond=0, tzinfo=timezone(timedelta(hours=hourOffset)), fold=0)
         autoClaveRecordTask = AutoClaveEventRecordTask(nowTime, dataSet, claveNum, obsDataTool)
         autoClaveRecordTask.run()
 

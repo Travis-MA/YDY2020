@@ -47,7 +47,7 @@ class DISDataTool(DataTool):
                 if r.recordResult == []:
                     break
 
-                print(r.statusCode)
+                #print(r.statusCode)
                 # print(r.recordResult)
                 # print(r.body)
                 # print(r.body["records"])
