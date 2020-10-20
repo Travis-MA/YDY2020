@@ -114,7 +114,7 @@ class ACTimeDomainAnalysisOBS(Algorithm):
         ts = 5
         j = ts
         
-        while dataSet[:,j][0] <= startTime and j<dataSet.shape[1]-1:
+        while dataSet[:,j][0] <= startTime and j<dataSet.shape[1]-2:
             j = j + 1
 
         if dataSet[:,j][3] >= tresh:
